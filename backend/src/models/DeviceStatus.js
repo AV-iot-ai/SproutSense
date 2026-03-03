@@ -46,6 +46,7 @@ const deviceStatusSchema = new mongoose.Schema({
     timestamp: { type: Date, default: Date.now }
   }]
 }, {
+  suppressReservedKeysWarning: true,
   timestamps: true
 });
 

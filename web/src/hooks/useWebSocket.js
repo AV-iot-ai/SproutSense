@@ -1,5 +1,29 @@
 import { useEffect, useRef, useState } from 'react';
 
+function resolveWebSocketUrl() {
+  const explicitWsUrl = import.meta.env.VITE_WS_URL;
+  if (explicitWsUrl) {
+    return explicitWsUrl;
+  }
+
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api';
+  const normalizedApiPath = apiBaseUrl.replace(/\/api\/?$/, '/ws');
+
+  if (/^https?:\/\//i.test(normalizedApiPath)) {
+    return normalizedApiPath
+      .replace(/^https:/i, 'wss:')
+      .replace(/^http:/i, 'ws:');
+  }
+
+  if (normalizedApiPath.startsWith('/')) {
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    return `${wsProtocol}//${window.location.host}${normalizedApiPath}`;
+  }
+
+  const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  return `${wsProtocol}//${window.location.host}/ws`;
+}
+
 export function useWebSocket(onMessage) {
   const [isConnected, setIsConnected] = useState(false);
   const wsRef = useRef(null);
@@ -7,14 +31,7 @@ export function useWebSocket(onMessage) {
 
   useEffect(() => {
     const connect = () => {
-      // Get the API base URL from environment or use relative path
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api';
-      
-      // Convert HTTP/HTTPS to WS/WSS and replace /api with /ws
-      const wsUrl = apiBaseUrl
-        .replace(/^https:/, 'wss:')
-        .replace(/^http:/, 'ws:')
-        .replace(/\/api$/, '/ws');
+      const wsUrl = resolveWebSocketUrl();
       
       console.log('Connecting to WebSocket:', wsUrl);
       wsRef.current = new WebSocket(wsUrl);

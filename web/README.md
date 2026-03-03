@@ -28,6 +28,17 @@ npm run dev
 npm run build
 ```
 
+## Environment Variables (Production)
+
+When frontend and backend are on different domains (for example Netlify + Render), set:
+
+```env
+VITE_API_BASE_URL=https://<your-render-service>.onrender.com/api
+VITE_WS_URL=wss://<your-render-service>.onrender.com/ws
+```
+
+`VITE_WS_URL` is optional. If omitted, WebSocket URL is derived from `VITE_API_BASE_URL`.
+
 ## Features
 
 - Real-time sensor monitoring
