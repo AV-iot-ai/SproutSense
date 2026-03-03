@@ -651,10 +651,9 @@ a:focus-visible {
   animation: connectionPulse 2s infinite;
 }
 
-.connection-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+.connection-icon {
+  width: 16px;
+  height: 16px;
   transition: all 0.3s ease;
 }
 
@@ -668,10 +667,10 @@ a:focus-visible {
   background: rgba(34, 197, 94, 0.1);
 }
 
-.navbar-connection.connected .connection-dot {
-  background: var(--plant-green);
-  box-shadow: 0 0 8px var(--plant-green);
-  animation: dotPulse 2.4s ease-in-out infinite;
+.navbar-connection.connected .connection-icon {
+  color: var(--plant-green);
+  filter: drop-shadow(0 0 4px var(--plant-green));
+  animation: iconPulse 2.4s ease-in-out infinite;
 }
 
 .navbar-connection.disconnected {
@@ -680,8 +679,19 @@ a:focus-visible {
   background: rgba(239, 68, 68, 0.14);
 }
 
-.navbar-connection.disconnected .connection-dot {
-  background: var(--danger-color);
+.navbar-connection.disconnected .connection-icon {
+  color: var(--danger-color);
+}
+
+@keyframes iconPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.75;
+    transform: scale(0.95);
+  }
 }
 
 @keyframes dotPulse {

@@ -59,6 +59,7 @@ function App() {
   const location = useLocation();
   const [sensors, setSensors] = useState(null);
   const [pumpActive, setPumpActive] = useState(false);
+  const [deviceOnline, setDeviceOnline] = useState(false);
   const [notification, setNotification] = useState({ message: '', type: 'info' });
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [moistureThreshold, setMoistureThreshold] = useState(30);
@@ -152,8 +153,13 @@ function App() {
         setSensors(sensorData.data || sensorData);
         setPumpActive(statusData.data?.pumpActive || false);
         setMoistureThreshold(configData?.soilMoistureThreshold ?? 30);
+        
+        // Check if ESP32 device is online based on recent sensor data
+        const deviceIsOnline = !!(sensorData && (sensorData.data || sensorData).timestamp);
+        setDeviceOnline(deviceIsOnline);
       } catch (error) {
         console.error('Failed to fetch initial data:', error);
+        setDeviceOnline(false);
       }
     };
     fetchData();
@@ -238,6 +244,7 @@ function App() {
         <Navbar
           currentPage={pageTitle}
           isConnected={isConnected}
+          deviceOnline={deviceOnline}
           isMobile={isMobile}
           isSidebarCollapsed={isSidebarCollapsed}
           toggleSidebar={toggleSidebar}

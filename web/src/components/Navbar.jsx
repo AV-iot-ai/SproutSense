@@ -11,6 +11,7 @@ export function Navbar({
   theme, 
   toggleTheme,
   alertCount = 0,
+  deviceOnline = false,
 }) {
   return (
     <nav className="top-navbar">
@@ -35,11 +36,19 @@ export function Navbar({
       </div>
 
       <div className="navbar-right">
-        {/* ESP32 connection status */}
-        <span className={`navbar-connection ${isConnected ? 'connected' : 'disconnected'}`}>
-          <span className="connection-dot"></span>
+        {/* Backend Server connection status */}
+        <span className={`navbar-connection ${isConnected ? 'connected' : 'disconnected'}`} title="Backend server connection">
+          <GlassIcon name="server" className="connection-icon" />
           <span className="connection-text">
-            {isConnected ? 'ESP32 Online' : 'ESP32 Offline'}
+            {isConnected ? 'Backend' : 'Offline'}
+          </span>
+        </span>
+
+        {/* ESP32 Device connection status */}
+        <span className={`navbar-connection ${deviceOnline ? 'connected' : 'disconnected'}`} title="ESP32 device status">
+          <GlassIcon name="wifi" className="connection-icon" />
+          <span className="connection-text">
+            {deviceOnline ? 'ESP32' : 'No Device'}
           </span>
         </span>
 
