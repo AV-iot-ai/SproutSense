@@ -1,0 +1,54 @@
+BLYNK AI PROMPT - SproutSense Plant Monitor
+
+Create an IoT dashboard for automated plant monitoring with ESP32-CAM.
+
+VIRTUAL PINS:
+V0 = Soil Moisture (0-100%, green when >60%, yellow 30-60%, red <30%)
+V1 = Soil pH (4.0-8.5, target zone 6.0-7.5)
+V2 = Temperature (°C, alert if >35° or <5°)
+V3 = Humidity (0-100%)
+V4 = Light Level (0-100%)
+V5 = Last Watering Volume (mL)
+V6 = Pump Control Button (switch: ON/OFF)
+V7 = Camera Snapshot Button (push button)
+V8 = Watering Cycles Count (0-3 per hour)
+V9 = Last Watering Timestamp
+
+DASHBOARD LAYOUT:
+
+Page 1 - Main Dashboard:
+- SuperChart (top): 24h trends for V0,V2,V3,V4 with color-coded lines
+- 4 Gauge widgets (2x2 grid): Moisture, Temperature, Humidity, Light
+- pH Level bar (V1): horizontal with 6.0-7.5 target zone
+- Pump Control Button (V6): large, blue when ON, gray when OFF
+- Value displays: Last watering volume (V5), cycles today (V8), timestamp (V9)
+
+Page 2 - History:
+- SuperChart: 7-day pH history
+- Bar chart: Daily water usage from V5
+- Notification log widget
+
+Page 3 - Camera:
+- Camera snapshot button (V7)
+- Image display for ESP32-CAM feed
+- Terminal for AI disease detection results
+
+AUTOMATIONS:
+1. Alert when V0 < 30%: "Soil moisture low!"
+2. Alert when V2 > 35°C: "Temperature too high!"
+3. Alert when V2 < 5°C: "Temperature too low!"
+4. Alert when V1 < 5.0 or > 8.0: "pH out of range!"
+5. Notification on successful watering (V5 update)
+6. Daily 8AM summary report
+
+STYLING:
+- Primary color: Green (#4CAF50)
+- Secondary: Blue (#2196F3)
+- Alert: Red (#F44336)
+- Rounded corners, shadows, clean layout
+- Large fonts for values, mobile-optimized
+
+GOOGLE ASSISTANT:
+Add widget with voice control instructions using Blynk API webhooks.
+
+Generate a professional, easy-to-use plant monitoring dashboard!

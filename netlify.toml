@@ -5,7 +5,7 @@
 
 [build.environment]
   NODE_VERSION = "18"
-  VITE_API_BASE_URL = "https://sprout-sense.vercel.app/api"
+  VITE_API_BASE_URL = "https://sproutsense-backend.onrender.com/api"
 
 [[redirects]]
   from = "/*"

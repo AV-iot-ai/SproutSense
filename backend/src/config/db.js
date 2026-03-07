@@ -1,9 +1,23 @@
 import mongoose from 'mongoose';
-import { MongoMemoryServer } from 'mongodb-memory-server';
 
 let hasRegisteredEvents = false;
 let reconnectTimer = null;
 let mongoMemoryServer = null;
+
+const isProduction = process.env.NODE_ENV === 'production';
+
+async function ensureInMemoryMongoServer() {
+  if (isProduction) {
+    throw new Error('In-memory MongoDB is disabled in production');
+  }
+
+  if (!mongoMemoryServer) {
+    const { MongoMemoryServer } = await import('mongodb-memory-server');
+    mongoMemoryServer = await MongoMemoryServer.create();
+  }
+
+  return mongoMemoryServer;
+}
 
 const connectDB = async () => {
   const mongoUri = process.env.MONGODB_URI;
@@ -14,12 +28,16 @@ const connectDB = async () => {
 
   // Use in-memory MongoDB for development if no URI provided
   if (!mongoUri) {
+    if (isProduction) {
+      console.error('❌ MONGODB_URI is required in production.');
+      console.log('⚠️  Database initialization skipped. Check Render environment variables.');
+      return;
+    }
+
     try {
       console.log('🔄 MongoDB URI not set. Starting in-memory MongoDB...');
-      if (!mongoMemoryServer) {
-        mongoMemoryServer = await MongoMemoryServer.create();
-        console.log('✅ In-memory MongoDB server created');
-      }
+      mongoMemoryServer = await ensureInMemoryMongoServer();
+      console.log('✅ In-memory MongoDB server created');
       const uri = mongoMemoryServer.getUri();
       
       await mongoose.connect(uri);
@@ -49,13 +67,16 @@ const connectDB = async () => {
     console.log('   1. For local MongoDB: Start mongod service');
     console.log('   2. For cloud MongoDB: Use MongoDB Atlas (free tier)');
     console.log('   3. Set MONGODB_URI in .env file');
+    if (isProduction) {
+      console.log('⚠️  Production mode: in-memory fallback is disabled.');
+      return;
+    }
+
     console.log('⚠️  Server will continue with in-memory database fallback...');
     
     // Fallback to in-memory
     try {
-      if (!mongoMemoryServer) {
-        mongoMemoryServer = await MongoMemoryServer.create();
-      }
+      mongoMemoryServer = await ensureInMemoryMongoServer();
       const uri = mongoMemoryServer.getUri();
       await mongoose.connect(uri);
       console.log('✅ Switched to in-memory MongoDB');
