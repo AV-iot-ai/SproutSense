@@ -22,14 +22,20 @@ const router = express.Router();
 // IMPORTANT: Specific routes must come BEFORE dynamic parameter routes
 // Otherwise /:deviceId will match everything
 
-// GET /api/config/status - Get device status
+// GET /api/config/status - Get device status (with optional ?deviceId= query param)
 router.get('/status', readLimiter, getStatus);
+
+// GET /api/config/status/:deviceId - Get device status by path param (supports ESP32-CAM etc.)
+router.get('/status/:deviceId', readLimiter, getStatus);
 
 // POST /api/config/status - Update device status (ESP32 endpoint)
 router.post('/status', validateDeviceStatus, updateStatus);
 
 // GET /api/config/health - Get system health
 router.get('/health', readLimiter, getHealth);
+
+// GET /api/config/health/:deviceId - Get health for specific device
+router.get('/health/:deviceId', readLimiter, getHealth);
 
 // GET /api/config/testmode - Get test mode status
 router.get('/testmode', readLimiter, getTestMode);

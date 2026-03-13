@@ -1,4 +1,4 @@
-﻿import mongoose from 'mongoose';
+import mongoose from 'mongoose';
 
 const deviceStatusSchema = new mongoose.Schema({
   deviceId: {
@@ -63,10 +63,10 @@ deviceStatusSchema.methods.markOffline = function() {
   return this.save();
 };
 
-// Check if device is stale (no update in 30 seconds)
+// Check if device is stale (no update in 5 minutes)
 deviceStatusSchema.methods.isStale = function() {
-  const thirtySecondsAgo = new Date(Date.now() - 30000);
-  return this.lastSeen < thirtySecondsAgo;
+  const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+  return this.lastSeen < fiveMinutesAgo;
 };
 
 // Static method to get or create status
@@ -83,4 +83,3 @@ deviceStatusSchema.statics.getStatus = async function(deviceId = 'ESP32-SENSOR')
 const DeviceStatus = mongoose.model('DeviceStatus', deviceStatusSchema);
 
 export default DeviceStatus;
-

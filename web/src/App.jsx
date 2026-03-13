@@ -1,7 +1,7 @@
-﻿import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { useWebSocket } from './hooks/useWebSocket';
-import { configAPI, sensorAPI, wateringAPI } from './utils/api';
+import { configAPI, sensorAPI, wateringAPI, aiAPI } from './utils/api';
 import { Navbar } from './components/Navbar';
 import { SensorCard } from './components/SensorCard';
 import { ControlCard } from './components/ControlCard';
@@ -100,6 +100,11 @@ function formatLastSeen(timestamp) {
   return date.toLocaleString();
 }
 
+function formatDiseaseName(name) {
+  if (!name) return 'Unknown';
+  return name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
 function App() {
   const location = useLocation();
   const [sensors, setSensors] = useState(null);
@@ -155,7 +160,7 @@ function App() {
     };
   }, []);
 
-  // Auto-generate alerts based on sensor readings
+  // Auto-generate alerts from sensor readings + ESP32-CAM disease detections
   useEffect(() => {
     if (!sensors) return;
     const newAlerts = [];
@@ -175,8 +180,80 @@ function App() {
     if (pumpActive && sensors.flowRate !== undefined && sensors.flowRate < 1) {
       newAlerts.push({ id: 'no-flow', type: 'error', message: 'Pump active but flow is near zero', value: `${sensors.flowRate} mL/min`, time: now });
     }
-    setAlerts(newAlerts);
+    setAlerts(prev => {
+      // Preserve disease alerts from ESP32-CAM, replace sensor alerts
+      const diseaseAlerts = prev.filter(a => a.source === 'ESP32-CAM');
+      return [...newAlerts, ...diseaseAlerts];
+    });
   }, [sensors, pumpActive]);
+
+  // Fetch latest ESP32-CAM disease detection and inject as alert
+  const fetchDiseaseAlerts = useCallback(async () => {
+    try {
+      const end = new Date();
+      const start = new Date(end.getTime() - 60 * 60 * 1000); // last 1 hour
+      const aiResp = await aiAPI.getDiseaseDetections({
+        deviceId: 'ESP32-CAM',
+        startDate: start.toISOString(),
+        endDate: end.toISOString(),
+        limit: 5,
+      });
+      const aiData = aiResp?.data || aiResp;
+      const detections = Array.isArray(aiData?.detections) ? aiData.detections : [];
+      if (detections.length === 0) return;
+
+      const latest = detections[0];
+      const isHealthy = !latest.detectedDisease ||
+        latest.detectedDisease.toLowerCase() === 'healthy' ||
+        latest.detectedDisease.toLowerCase() === 'unknown';
+
+      if (!isHealthy) {
+        const diseaseAlert = {
+          id: `disease-${latest._id || latest.timestamp}`,
+          type: 'error',
+          message: `Plant disease detected: ${formatDiseaseName(latest.detectedDisease)}`,
+          value: latest.confidence !== undefined
+            ? `Confidence: ${Math.round(latest.confidence * 100)}%`
+            : 'ESP32-CAM Detection',
+          source: 'ESP32-CAM',
+          time: latest.timestamp ? new Date(latest.timestamp) : new Date(),
+        };
+        setAlerts(prev => {
+          const withoutOldDisease = prev.filter(
+            a => !(a.source === 'ESP32-CAM' && a.id.startsWith('disease-'))
+          );
+          return [...withoutOldDisease, diseaseAlert];
+        });
+      } else {
+        // Plant is healthy — add info alert
+        const healthyAlert = {
+          id: 'disease-healthy',
+          type: 'info',
+          message: 'ESP32-CAM: Plant appears healthy',
+          value: latest.confidence !== undefined
+            ? `Confidence: ${Math.round(latest.confidence * 100)}%`
+            : 'No disease detected',
+          source: 'ESP32-CAM',
+          time: latest.timestamp ? new Date(latest.timestamp) : new Date(),
+        };
+        setAlerts(prev => {
+          const withoutOldDisease = prev.filter(
+            a => !(a.source === 'ESP32-CAM' && a.id.startsWith('disease-'))
+          );
+          return [...withoutOldDisease, healthyAlert];
+        });
+      }
+    } catch (e) {
+      // Silently ignore; disease API may be unavailable
+    }
+  }, []);
+
+  // Poll disease alerts every 60 seconds
+  useEffect(() => {
+    fetchDiseaseAlerts();
+    const interval = setInterval(fetchDiseaseAlerts, 60000);
+    return () => clearInterval(interval);
+  }, [fetchDiseaseAlerts]);
 
   const toggleTheme = () => {
     const root = document.documentElement;
@@ -303,12 +380,21 @@ function App() {
         setPlantGrowthStage(configData?.plantGrowthStage || 'vegetative');
         setAiInsightsMode(configData?.aiInsightsMode || 'snapshots');
 
+        // Determine online status: device is online if online flag is true
+        // AND lastSeen within the last 5 minutes (consistent with backend stale check)
+        const isDeviceOnline = (statusObj) => {
+          if (!statusObj?.online) return false;
+          if (!statusObj?.lastSeen) return false;
+          const fiveMinAgo = Date.now() - 5 * 60 * 1000;
+          return new Date(statusObj.lastSeen).getTime() > fiveMinAgo;
+        };
+
         setSystemStatus((prev) => ({
           ...prev,
           backend: healthData?.backend === 'healthy' ? 'online' : onlineToStatus(isConnected),
           database: healthData?.database === 'connected' ? 'online' : 'offline',
-          esp32: onlineToStatus(!!esp32Status?.online),
-          esp32Cam: onlineToStatus(!!esp32CamStatus?.online),
+          esp32: onlineToStatus(isDeviceOnline(esp32Status)),
+          esp32Cam: onlineToStatus(isDeviceOnline(esp32CamStatus)),
           esp32LastSeen: esp32Status?.lastSeen || null,
           esp32CamLastSeen: esp32CamStatus?.lastSeen || null,
           lastUpdated: new Date().toISOString(),
@@ -380,6 +466,15 @@ function App() {
 
   const showNotification = (message, type = 'info') => setNotification({ message, type });
   const closeNotification = () => setNotification({ message: '', type: 'info' });
+
+  // Alert handlers
+  const handleClearAlert = useCallback((id) => {
+    setAlerts(prev => prev.filter(a => a.id !== id));
+  }, []);
+
+  const handleClearAllAlerts = useCallback(() => {
+    setAlerts([]);
+  }, []);
 
   return (
     <div className={`app-shell${isSidebarCollapsed ? ' sidebar-collapsed' : ''}`}>
@@ -554,7 +649,12 @@ function App() {
             path="/alerts"
             element={
               <section className="dashboard-section">
-                <AlertsPage alerts={alerts} sensors={sensors} />
+                <AlertsPage
+                  alerts={alerts}
+                  sensors={sensors}
+                  onClearAlert={handleClearAlert}
+                  onClearAllAlerts={handleClearAllAlerts}
+                />
               </section>
             }
           />
@@ -640,4 +740,3 @@ function App() {
 }
 
 export default App;
-

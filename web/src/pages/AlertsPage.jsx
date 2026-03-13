@@ -67,22 +67,35 @@ function formatTime(ts) {
   return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
 }
 
-export default function AlertsPage({ alerts = [], sensors }) {
+export default function AlertsPage({ alerts = [], sensors, onClearAlert, onClearAllAlerts }) {
   const [filter, setFilter] = useState('all');
+  const [dismissed, setDismissed] = useState(new Set());
+
+  const visibleAlerts = alerts.filter(a => !dismissed.has(a.id));
 
   const filtered = filter === 'all'
-    ? alerts
-    : alerts.filter(a => a.type === filter);
+    ? visibleAlerts
+    : visibleAlerts.filter(a => a.type === filter);
 
   const sorted = [...filtered].sort((a, b) =>
     (SEVERITY_ORDER[a.type] ?? 9) - (SEVERITY_ORDER[b.type] ?? 9)
   );
 
-  // Count by type
-  const counts = alerts.reduce((acc, a) => {
+  const counts = visibleAlerts.reduce((acc, a) => {
     acc[a.type] = (acc[a.type] || 0) + 1;
     return acc;
   }, {});
+
+  const handleDismiss = (id) => {
+    setDismissed(prev => new Set([...prev, id]));
+    if (onClearAlert) onClearAlert(id);
+  };
+
+  const handleClearAll = () => {
+    const allIds = new Set(visibleAlerts.map(a => a.id));
+    setDismissed(prev => new Set([...prev, ...allIds]));
+    if (onClearAllAlerts) onClearAllAlerts();
+  };
 
   return (
     <div className="alerts-page">
@@ -105,8 +118,18 @@ export default function AlertsPage({ alerts = [], sensors }) {
           {counts.info > 0 && (
             <span className="alerts-badge info">{counts.info} Info</span>
           )}
-          {alerts.length === 0 && (
+          {visibleAlerts.length === 0 && (
             <span className="alerts-badge success">All Clear</span>
+          )}
+          {visibleAlerts.length > 0 && (
+            <button
+              className="alerts-clear-btn"
+              onClick={handleClearAll}
+              title="Clear all alerts"
+            >
+              <GlassIcon name="close" />
+              Clear All
+            </button>
           )}
         </div>
       </div>
@@ -119,7 +142,7 @@ export default function AlertsPage({ alerts = [], sensors }) {
             className={`alerts-filter-tab${filter === f ? ' active' : ''}`}
             onClick={() => setFilter(f)}
           >
-            {f === 'all' ? `All (${alerts.length})` : `${f.charAt(0).toUpperCase() + f.slice(1)} (${counts[f] || 0})`}
+            {f === 'all' ? `All (${visibleAlerts.length})` : `${f.charAt(0).toUpperCase() + f.slice(1)} (${counts[f] || 0})`}
           </button>
         ))}
       </div>
@@ -146,8 +169,19 @@ export default function AlertsPage({ alerts = [], sensors }) {
                   <div className="alert-item-content">
                     <span className="alert-item-msg">{alert.message}</span>
                     <span className="alert-item-val">{alert.value}</span>
+                    {alert.source && (
+                      <span className="alert-item-source">{alert.source}</span>
+                    )}
                   </div>
                   <span className="alert-item-time">{formatTime(alert.time)}</span>
+                  <button
+                    className="alert-dismiss-btn"
+                    onClick={() => handleDismiss(alert.id)}
+                    title="Dismiss alert"
+                    aria-label="Dismiss"
+                  >
+                    <GlassIcon name="close" />
+                  </button>
                 </div>
               ))}
             </div>
@@ -191,7 +225,6 @@ export default function AlertsPage({ alerts = [], sensors }) {
                   <div className="tc-range">
                     Optimal: {t.min}–{t.max}{t.unit}
                   </div>
-                  {/* Visual bar */}
                   {current !== undefined && (
                     <div className="tc-bar-wrap">
                       <div className="tc-bar">
