@@ -2,7 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GlassIcon } from '../components/GlassIcon';
+import ScrollVelocity from '../components/ScrollVelocity';
 import '../styles/HomePage.css';
+import '../styles/ScrollVelocity.css';
 
 const HomePage = ({ theme, sensors, isConnected }) => {
   const navigate = useNavigate();
@@ -91,6 +93,47 @@ const HomePage = ({ theme, sensors, isConnected }) => {
     {
       category: 'AI / ML',
       items: ['Edge Impulse', 'TensorFlow Lite', 'On-device Inference', 'Image Classification'],
+    },
+  ];
+
+  const problemsSolutions = [
+    {
+      problem: 'Inconsistent Watering',
+      solution:
+        'Set per-plant moisture thresholds and use scheduled windowed watering with safety cutoffs to avoid overwatering.',
+    },
+    {
+      problem: 'Late Disease Detection',
+      solution:
+        'Use frequent on-device image capture with lightweight Edge Impulse models and immediate alerting to the dashboard.',
+    },
+    {
+      problem: 'No Local Feedback',
+      solution:
+        'Add the ST7735R TFT overview to the sensor controller so users see quick local status without the web app.',
+    },
+    {
+      problem: 'Network Outages',
+      solution:
+        'Queue important sensor events locally on the ESP32 and sync when connectivity is restored; keep safe default watering behavior.',
+    },
+  ];
+
+  const aiResources = [
+    {
+      title: 'Edge Impulse Docs',
+      url: 'https://docs.edgeimpulse.com',
+      desc: 'Guides for training and exporting TFLite models for ESP32-CAM.'
+    },
+    {
+      title: 'TensorFlow Lite Micro',
+      url: 'https://www.tensorflow.org/lite/microcontrollers',
+      desc: 'Reference for running models on microcontrollers and optimizing size/latency.'
+    },
+    {
+      title: 'Soil Moisture Best Practices',
+      url: 'https://example.com/soil-moisture-guide',
+      desc: 'Practical tips for sensor placement and calibration.'
     },
   ];
 
@@ -282,6 +325,54 @@ const HomePage = ({ theme, sensors, isConnected }) => {
         </div>
       </section>
 
+      {/* PROBLEMS & SOLUTIONS */}
+      <section className="problems-section">
+        <div className="section-container">
+          <h2 className="section-title">Problems & Solutions</h2>
+          <div className="problems-grid">
+            {problemsSolutions.map((ps, i) => (
+              <div key={i} className="problem-card" style={{ animationDelay: `${i * 100}ms` }}>
+                <h3 className="problem-title">{ps.problem}</h3>
+                <p className="problem-solution">{ps.solution}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* AI INSIGHTS & WEB RESOURCES */}
+      <section className="ai-insights-section">
+        <div className="section-container">
+          <h2 className="section-title">AI Insights & Resources</h2>
+          <div className="ai-insights-grid">
+            <div className="ai-summary">
+              <p className="ai-desc">
+                Our on-device AI provides early warnings for common leaf diseases. For best results,
+                ensure consistent lighting, focused framing of leaves, and regular model retraining
+                with new labeled samples from your plants.
+              </p>
+              <ul className="ai-tips">
+                <li>Tip: Capture images from multiple angles for robust inference.</li>
+                <li>Tip: Retrain weekly with recent samples for seasonal shifts.</li>
+                <li>Tip: Combine sensor thresholds with image alerts for higher precision.</li>
+              </ul>
+            </div>
+
+            <div className="ai-resources">
+              {aiResources.map((r) => (
+                <a key={r.title} className="resource-card" href={r.url} target="_blank" rel="noopener noreferrer">
+                  <div className="resource-head">
+                    <GlassIcon name="link" />
+                    <h4>{r.title}</h4>
+                  </div>
+                  <p className="resource-desc">{r.desc}</p>
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ARCHITECTURE */}
       <section className="architecture-section">
         <div className="section-container">
@@ -331,6 +422,9 @@ const HomePage = ({ theme, sensors, isConnected }) => {
       <section className="tech-stack-section">
         <div className="section-container">
           <h2 className="section-title">Technology Stack</h2>
+          <div style={{ marginTop: 12, marginBottom: 18 }}>
+            
+          </div>
           <div className="tech-stack-grid">
             {techStack.map((stack, index) => (
               <div
@@ -340,11 +434,15 @@ const HomePage = ({ theme, sensors, isConnected }) => {
               >
                 <h3>{stack.category}</h3>
                 <div className="tech-items">
-                  {stack.items.map((item) => (
-                    <span key={item} className="tech-badge">
-                      {item}
-                    </span>
-                  ))}
+                  <ScrollVelocity
+                    texts={[stack.items.join(' • ')]}
+                    className="tech-badge"
+                    parallaxClassName="tech-parallax"
+                    scrollerClassName="tech-scroller"
+                    velocity={index % 2 !== 0 ? -100 : 80}
+                    numCopies={2}
+                    velocityMapping={{ input: [0, 1000], output: [0, 5] }}
+                  />
                 </div>
               </div>
             ))}

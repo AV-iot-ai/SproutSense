@@ -557,6 +557,98 @@
 }
 
 /* ========================================
+   PROBLEMS & SOLUTIONS
+   ======================================== */
+
+.problems-section {
+  padding: 60px 20px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.02), transparent 30%);
+}
+
+.problems-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.problem-card {
+  background: var(--card-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 20px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.problem-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+.problem-title {
+  font-size: 1.05rem;
+  color: var(--color-text-primary);
+  margin-bottom: 8px;
+}
+
+.problem-solution {
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+/* ========================================
+   AI INSIGHTS & RESOURCES
+   ======================================== */
+
+.ai-insights-section {
+  padding: 60px 20px 80px;
+  background: var(--section-bg);
+}
+
+.ai-insights-grid {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 24px;
+  align-items: start;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.ai-summary { background: transparent; }
+.ai-desc { color: var(--color-text-secondary); margin-bottom: 12px; }
+.ai-tips { margin: 0; padding-left: 18px; color: var(--color-text-secondary); }
+.ai-tips li { margin-bottom: 8px; }
+
+.ai-resources { display: flex; flex-direction: column; gap: 12px; }
+
+.resource-card {
+  display: block;
+  background: var(--card-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s ease;
+}
+
+.resource-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  border-color: var(--color-primary);
+}
+
+.resource-head { display:flex; align-items:center; gap:10px; }
+.resource-head h4 { margin:0; font-size:1rem; }
+.resource-desc { margin:6px 0 0; color:var(--color-text-secondary); font-size:0.9rem; }
+
+@media (max-width: 900px) {
+  .ai-insights-grid { grid-template-columns: 1fr; }
+}
+
+/* ========================================
    ARCHITECTURE SECTION
    ======================================== */
 
@@ -621,8 +713,8 @@
 }
 
 .tech-stack-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 24px;
 }
 
@@ -633,6 +725,7 @@
   padding: 32px;
   opacity: 0;
   animation: slideInUp 0.6s ease forwards;
+  overflow: hidden;
 }
 
 .tech-stack-card h3 {
@@ -662,6 +755,30 @@
 .tech-badge:hover {
   background: rgba(var(--color-primary-rgb), 0.2);
   transform: translateY(-2px);
+}
+
+/* ScrollVelocity tech-stack overrides */
+.tech-parallax {
+  width: 100%;
+  overflow: hidden;
+  display: block;
+  height: 40px;
+}
+.tech-scroller {
+  display: flex;
+  gap: 12px;
+  white-space: nowrap;
+  align-items: center;
+  font-size: 14px;
+  line-height: 1.4;
+  flex-wrap: nowrap;
+}
+.tech-scroller span.tech-badge {
+  padding: 6px 12px;
+  font-size: 13px;
+  white-space: nowrap;
+  display: inline-block;
+  flex: 0 0 auto;
 }
 
 /* ========================================

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { GlassIcon } from './GlassIcon';
+import ElasticSlider from './ElasticSlider';
 import { configAPI, wateringAPI } from '../utils/api';
 
 export function ControlCard({
@@ -118,15 +119,13 @@ export function ControlCard({
         <div className="control-field">
           <label className="control-label">Timed Watering</label>
           <div className="control-row">
-            <input
-              type="number"
-              className="control-input"
-              min="5"
-              max="300"
-              step="5"
-              value={waterDuration}
-              onChange={e => setWaterDuration(Number(e.target.value))}
-              placeholder="Duration"
+            <ElasticSlider
+              defaultValue={waterDuration}
+              maxValue={300}
+              startingValue={5}
+              isStepped={true}
+              stepSize={5}
+              onChange={val => setWaterDuration(Math.round(val))}
             />
             <span className="control-unit">seconds</span>
             <button
@@ -165,15 +164,13 @@ export function ControlCard({
             Moisture Threshold
           </label>
           <div className="control-row">
-            <input
-              id="moisture-threshold-input"
-              className="control-input"
-              type="number"
-              min="0"
-              max="100"
-              value={moistureThreshold}
-              onChange={e => onMoistureThresholdChange(Number(e.target.value))}
-              placeholder="0-100"
+            <ElasticSlider
+              defaultValue={moistureThreshold}
+              maxValue={100}
+              startingValue={0}
+              isStepped={true}
+              stepSize={1}
+              onChange={val => onMoistureThresholdChange(Math.round(val))}
             />
             <span className="control-unit">%</span>
             <button
