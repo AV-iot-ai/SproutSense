@@ -480,7 +480,7 @@ const HomePage = ({ theme, sensors, isConnected }) => {
               <GlassIcon name="records" className="qa-icon" />
               <span>History</span>
             </button>
-            <button className="quick-action-btn" onClick={() => navigate('/settings`}>
+            <button className="quick-action-btn" onClick={() => navigate('/settings')}>
               <GlassIcon name="settings" className="qa-icon" />
               <span>Settings</span>
             </button>
