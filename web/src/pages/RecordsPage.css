@@ -1,4 +1,4 @@
-.records-page {
+.analytics-page {
   padding: 1.5rem 2rem 2rem;
   max-width: 1200px;
   margin: 0 auto;
@@ -485,7 +485,7 @@
 }
 
 @media (max-width: 600px) {
-  .records-page {
+  /* File removed after migration to AnalyticsPage.css */
     padding: 1rem;
   }
   .records-header {

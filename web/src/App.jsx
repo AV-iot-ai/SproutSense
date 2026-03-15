@@ -11,7 +11,7 @@ import { Notification } from './components/Notification';
 import { GlassIcon } from './components/GlassIcon';
 import HomePage from './pages/HomePage';
 import SettingsPage from './pages/SettingsPage';
-import RecordsPage from './pages/RecordsPage';
+import AnalyticsPage from './pages/AnalyticsPage';
 import AlertsPage from './pages/AlertsPage';
 import AIChat from './pages/AIChat';
 import InsightsPage from './pages/InsightsPage';
@@ -29,7 +29,7 @@ const sidebarCategories = [
     label: 'Monitor',
     items: [
       { path: '/sensors', label: 'Sensors', icon: 'sensors' },
-      { path: '/records', label: 'Records', icon: 'records' },
+      { path: '/analytics', label: 'Analytics', icon: 'records' },
       { path: '/alerts', label: 'Alerts', icon: 'bell' },
     ]
   },
@@ -638,10 +638,10 @@ function App() {
             }
           />
           <Route
-            path="/records"
+            path="/analytics"
             element={
               <section className="dashboard-section">
-                <RecordsPage />
+                <AnalyticsPage />
               </section>
             }
           />

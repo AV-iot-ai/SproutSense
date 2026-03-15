@@ -1,4 +1,5 @@
-﻿import React, { useState, useEffect, useCallback, useMemo } from 'react';
+﻿// File removed after migration to AnalyticsPage.jsx
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { aiAPI, sensorAPI } from '../utils/api';
 import { formatDiseaseName } from '../utils/formatters';
 import { GlassIcon } from '../components/GlassIcon';

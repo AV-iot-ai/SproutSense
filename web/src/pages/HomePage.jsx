@@ -65,7 +65,7 @@ const HomePage = ({ theme, sensors, isConnected }) => {
     },
     {
       title: 'Real-time Dashboard',
-      description: 'WebSocket live data streaming, interactive charts, historical records, and instant alerts for critical conditions',
+      description: 'WebSocket live data streaming, interactive charts, historical analytics, and instant alerts for critical conditions',
       icon: 'bell',
       path: '/sensors',
     },
@@ -278,7 +278,7 @@ const HomePage = ({ theme, sensors, isConnected }) => {
               <GlassIcon name="sensors" className="qa-icon" />
               <span>View Sensors</span>
             </button>
-            <button className="quick-action-btn" onClick={() => navigate('/records')}>
+            <button className="quick-action-btn" onClick={() => navigate('/analytics')}>
               <GlassIcon name="records" className="qa-icon" />
               <span>History</span>
             </button>

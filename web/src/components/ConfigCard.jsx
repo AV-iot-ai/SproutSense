@@ -28,13 +28,13 @@ export function ConfigCard({ onNotification, systemStatus: externalSystemStatus 
   };
 
   const formatNextCleanupMessage = (result, label) => {
-    const recordsDeleted = result?.recordsDeleted || 0;
+    const analyticsDeleted = result?.recordsDeleted || 0;
     const nextCleanupDate = result?.nextCleanup ? new Date(result.nextCleanup) : null;
     const hasValidNextCleanup = nextCleanupDate && !Number.isNaN(nextCleanupDate.getTime());
 
     return hasValidNextCleanup
-      ? `Cleared ${recordsDeleted} ${label}. Next cleanup: ${nextCleanupDate.toLocaleDateString()}`
-      : `Cleared ${recordsDeleted} ${label}.`;
+      ? `Cleared ${analyticsDeleted} ${label}. Next cleanup: ${nextCleanupDate.toLocaleDateString()}`
+      : `Cleared ${analyticsDeleted} ${label}.`;
   };
 
   useEffect(() => {
@@ -150,7 +150,7 @@ Options:
             return;
           }
           result = await configAPI.clearDiseaseHistory('ESP32-SENSOR', 180);
-          onNotification?.(formatNextCleanupMessage(result, 'disease records'), 'success');
+          onNotification?.(formatNextCleanupMessage(result, 'disease analytics'), 'success');
           break;
 
         case '4': // All history
@@ -161,7 +161,7 @@ Options:
           result = await configAPI.clearAllHistory('ESP32-SENSOR');
           const summary = result.summary || result;
           onNotification?.(
-            `Cleared all history: ${summary.totalRecordsDeleted || 0} total records deleted`,
+            `Cleared all history: ${summary.totalRecordsDeleted || 0} total analytics deleted`,
             'success'
           );
           break;
@@ -231,7 +231,7 @@ Options:
       link.click();
       document.body.removeChild(link);
       
-      onNotification?.(`Data exported successfully (${readings.length} records)`, 'success');
+      onNotification?.(`Data exported successfully (${readings.length} analytics)`, 'success');
     } catch (error) {
       console.error('Failed to export data:', error);
       onNotification?.('Failed to export data', 'error');
@@ -387,7 +387,7 @@ Options:
           </button>
         </div>
         <p className="config-note">
-          Export your sensor data as CSV or clear all historical records. Export includes the last 7 days of readings.
+          Export your sensor data as CSV or clear all historical analytics. Export includes the last 7 days of readings.
         </p>
       </div>
 
