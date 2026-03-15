@@ -38,14 +38,9 @@
 
 .hero-modern {
   position: relative;
-  padding: 80px 20px 120px;
-  background: linear-gradient(135deg,
-    var(--hero-gradient-start) 0%,
-    var(--hero-gradient-mid) 50%,
-    var(--hero-gradient-end) 100%);
+  padding: 72px 32px 110px;
+  background: url('/assets/img2.png') center/cover no-repeat;
   border-radius: 0 0 40px 40px;
-    background: url('/assets/img2.png') center/cover no-repeat;
-
   overflow: hidden;
 }
 
@@ -57,19 +52,19 @@
   right: 0;
   bottom: 0;
   background:
-    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.08) 0%, transparent 50%);
+    radial-gradient(circle at 20% 20%, rgba(0, 0, 0, 0.6) 0%, transparent 55%),
+    radial-gradient(circle at 80% 80%, rgba(0, 0, 0, 0.5) 0%, transparent 55%);
   pointer-events: none;
 }
 
 .hero-inner {
-  max-width: 1200px;
+  max-width: 1120px;
   margin: 0 auto;
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-  gap: 32px;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 40px;
   align-items: center;
 }
 
@@ -99,11 +94,12 @@
 }
 
 .hero-title-modern {
-  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-size: clamp(2.4rem, 4.6vw, 3.6rem);
   font-weight: 700;
   color: white;
-  line-height: 1.2;
-  margin-bottom: 24px;
+  line-height: 1.15;
+  letter-spacing: 0.02em;
+  margin-bottom: 28px;
   animation: fadeInUp 0.6s ease 0.1s both;
 }
 
@@ -115,16 +111,17 @@
 }
 
 .hero-subtitle-modern {
-  font-size: clamp(1rem, 2vw, 1.25rem);
+  max-width: 520px;
+  font-size: 1rem;
   color: rgba(255, 255, 255, 0.95);
-  line-height: 1.7;
-  margin-bottom: 40px;
+  line-height: 1.8;
+  margin-bottom: 36px;
   animation: fadeInUp 0.6s ease 0.2s both;
 }
 
 .hero-actions {
   display: flex;
-  gap: 16px;
+  gap: 18px;
   justify-content: flex-start;
   flex-wrap: wrap;
   animation: fadeInUp 0.6s ease 0.3s both;
@@ -147,19 +144,19 @@
 .btn-hero-primary {
   background: white;
   color: var(--hero-gradient-start);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
 }
 
 .btn-hero-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
 }
 
 .btn-hero-secondary {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.22);
   color: white;
   border: 2px solid rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
 }
 
 .btn-hero-secondary:hover {
@@ -665,6 +662,85 @@
 }
 
 /* ========================================
+   FOOD IMPACT SECTION
+   ======================================== */
+
+.food-section {
+  padding: 72px 20px 80px;
+  background: var(--section-bg);
+}
+
+.food-intro {
+  max-width: 720px;
+  margin: 0 auto 28px;
+  text-align: center;
+  font-size: 0.96rem;
+  color: var(--color-text-secondary);
+  line-height: 1.8;
+}
+
+.food-section-grid {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.food-card {
+  background: var(--card-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  padding: 24px 28px;
+}
+
+.food-card h3 {
+  font-size: 1.2rem;
+  margin-bottom: 12px;
+  color: var(--color-text-primary);
+}
+
+.food-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.food-list-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.food-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--color-warning);
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+.food-dot-success {
+  background: var(--color-success);
+}
+
+.food-list-title {
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.food-list-text {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+/* ========================================
    QUICK ACTIONS SECTION
    ======================================== */
 
@@ -868,6 +944,10 @@
   .hero-media-status-card {
     position: static;
     margin-top: 12px;
+  }
+
+  .food-section-grid {
+    grid-template-columns: 1fr;
   }
 }
 
