@@ -124,6 +124,7 @@ export default function SettingsPage({ theme, toggleTheme, onNotification }) {
           <div className="settings-card-body">
             <div className="settings-row">
               <div className="settings-row-info">
+                <GlassIcon name={theme === 'dark' ? 'moon' : 'sun'} className="settings-row-icon" />
                 <span className="settings-row-label">Theme</span>
                 <span className="settings-row-desc">Switch between dark and light mode</span>
               </div>
@@ -149,13 +150,14 @@ export default function SettingsPage({ theme, toggleTheme, onNotification }) {
           </div>
           <div className="settings-card-body">
             {[
-              { key: 'lowMoisture', label: 'Low Soil Moisture Alert', desc: 'Alert when moisture drops below threshold' },
-              { key: 'highTemp', label: 'High Temperature Alert', desc: 'Alert when temperature exceeds 38 °C' },
-              { key: 'phAlert', label: 'pH Out of Range', desc: 'Alert when pH is outside 5.5-7.5' },
-              { key: 'systemAlerts', label: 'System Alerts', desc: 'ESP32 connection status changes' },
-            ].map(({ key, label, desc }) => (
+              { key: 'lowMoisture', label: 'Low Soil Moisture Alert', desc: 'Alert when moisture drops below threshold', icon: 'watering' },
+              { key: 'highTemp', label: 'High Temperature Alert', desc: 'Alert when temperature exceeds 38 °C', icon: 'temperature' },
+              { key: 'phAlert', label: 'pH Out of Range', desc: 'Alert when pH is outside 5.5-7.5', icon: 'ph' },
+              { key: 'systemAlerts', label: 'System Alerts', desc: 'ESP32 connection status changes', icon: 'esp32' },
+            ].map(({ key, label, desc, icon }) => (
               <div className="settings-row" key={key}>
                 <div className="settings-row-info">
+                  <GlassIcon name={icon} className="settings-row-icon" />
                   <span className="settings-row-label">{label}</span>
                   <span className="settings-row-desc">{desc}</span>
                 </div>
@@ -182,7 +184,7 @@ export default function SettingsPage({ theme, toggleTheme, onNotification }) {
               Keys are stored locally in your browser and sent only to the backend when using AI features.
             </p>
             <div className="settings-field">
-              <label className="settings-label">Google Gemini API Key</label>
+              <label className="settings-label"><GlassIcon name="bot" className="settings-row-icon" /> Google Gemini API Key</label>
               <input
                 type="password"
                 className="settings-input"
@@ -193,7 +195,7 @@ export default function SettingsPage({ theme, toggleTheme, onNotification }) {
               />
             </div>
             <div className="settings-field">
-              <label className="settings-label">OpenAI API Key</label>
+              <label className="settings-label"><GlassIcon name="bot" className="settings-row-icon" /> OpenAI API Key</label>
               <input
                 type="password"
                 className="settings-input"
@@ -252,7 +254,7 @@ export default function SettingsPage({ theme, toggleTheme, onNotification }) {
           </div>
           <div className="settings-card-body">
             <div className="settings-field">
-              <label className="settings-label">ESP32 IP Address</label>
+              <label className="settings-label"><GlassIcon name="esp32" className="settings-row-icon" /> ESP32 IP Address</label>
               <input
                 type="text"
                 className="settings-input"
@@ -262,7 +264,7 @@ export default function SettingsPage({ theme, toggleTheme, onNotification }) {
               />
             </div>
             <div className="settings-field">
-              <label className="settings-label">Device ID</label>
+              <label className="settings-label"><GlassIcon name="esp32" className="settings-row-icon" /> Device ID</label>
               <input
                 type="text"
                 className="settings-input"
@@ -272,7 +274,7 @@ export default function SettingsPage({ theme, toggleTheme, onNotification }) {
               />
             </div>
             <div className="settings-field">
-              <label className="settings-label">Sensor Refresh Interval (seconds)</label>
+              <label className="settings-label"><GlassIcon name="refresh" className="settings-row-icon" /> Sensor Refresh Interval (seconds)</label>
               <input
                 type="number"
                 className="settings-input"
@@ -283,7 +285,7 @@ export default function SettingsPage({ theme, toggleTheme, onNotification }) {
               />
             </div>
             <div className="settings-field">
-              <label className="settings-label">Data Retention (days)</label>
+              <label className="settings-label"><GlassIcon name="database" className="settings-row-icon" /> Data Retention (days)</label>
               <input
                 type="number"
                 className="settings-input"
