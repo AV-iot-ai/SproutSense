@@ -1,7 +1,6 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { GlassIcon } from './GlassIcon';
 import { configAPI, wateringAPI } from '../utils/api';
-import SoilMoistureGauge from "./SoilMoistureGauge";
 
 export function ControlCard({
   pumpActive,
@@ -39,7 +38,7 @@ export function ControlCard({
       setAutoWater(!next); // revert
     }
   };
-<SoilMoistureGauge value={soilMoisture} />
+
   const handleTimedWater = async () => {
     try {
       await wateringAPI.start('ESP32-SENSOR', waterDuration);
@@ -295,10 +294,6 @@ export function ControlCard({
           </div>
         </div>
       </div>
-
-      
     </div>
   );
 }
-
-
