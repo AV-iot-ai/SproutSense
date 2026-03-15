@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { GlassIcon } from '../components/GlassIcon';
 import '../styles/HomePage.css';
 
+const HARDWARE_IMAGE_URL = 'https://agi-prod-file-upload-public-main-use1.s3.amazonaws.com/fd1f689e-6454-4dba-ba01-f08f225d1737';
+const AI_IMAGE_URL = 'https://agi-prod-file-upload-public-main-use1.s3.amazonaws.com/81cf7661-631f-43e6-8a8b-b5e1deec9025';
+
 const HomePage = ({ theme, sensors, isConnected }) => {
   const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(false);
@@ -82,28 +85,61 @@ const HomePage = ({ theme, sensors, isConnected }) => {
     <div className={`homepage-new ${isVisible ? 'visible' : ''}`} data-theme={theme}>
       {/* Hero Section */}
       <section className="hero-modern">
-        <div className="hero-content-modern">
-          <div className="hero-badge">
-            <GlassIcon name="sprout" className="hero-badge-icon" />
-            <span>IoT + AI Plant Care System</span>
+        <div className="hero-inner">
+          <div className="hero-content-modern">
+            <div className="hero-badge">
+              <GlassIcon name="sprout" className="hero-badge-icon" />
+              <span>IoT + AI Plant Care System</span>
+            </div>
+            <h1 className="hero-title-modern">
+              SproutSense:
+              <br />
+              <span className="gradient-text">Smart Plant Care Without the Guesswork</span>
+            </h1>
+            <p className="hero-subtitle-modern">
+              An advanced IoT system combining dual ESP32 microcontrollers, 6 environmental sensors, AI-powered disease detection, and automated watering—keeping your plants healthy 24/7 with zero manual intervention.
+            </p>
+            <div className="hero-actions">
+              <button className="btn-hero btn-hero-primary" onClick={() => navigate('/controls')}>
+                <GlassIcon name="controls" />
+                <span>Control System</span>
+              </button>
+              <button className="btn-hero btn-hero-secondary" onClick={() => navigate('/sensors')}>
+                <GlassIcon name="sensors" />
+                <span>Live Dashboard</span>
+              </button>
+            </div>
           </div>
-          <h1 className="hero-title-modern">
-            SproutSense:
-            <br />
-            <span className="gradient-text">Smart Plant Care Without the Guesswork</span>
-          </h1>
-          <p className="hero-subtitle-modern">
-            An advanced IoT system combining dual ESP32 microcontrollers, 6 environmental sensors, AI-powered disease detection, and automated watering—keeping your plants healthy 24/7 with zero manual intervention.
-          </p>
-          <div className="hero-actions">
-            <button className="btn-hero btn-hero-primary" onClick={() => navigate('/controls')}>
-              <GlassIcon name="controls" />
-              <span>Control System</span>
-            </button>
-            <button className="btn-hero btn-hero-secondary" onClick={() => navigate('/sensors')}>
-              <GlassIcon name="sensors" />
-              <span>Live Dashboard</span>
-            </button>
+
+          <div className="hero-media">
+            <div className="hero-media-card hero-media-hardware">
+              <img
+                src={HARDWARE_IMAGE_URL}
+                alt="SproutSense hardware monitoring a plant with ESP32, sensors, and water pump"
+                className="hero-media-img"
+              />
+            </div>
+            <div className="hero-media-card hero-media-ai">
+              <img
+                src={AI_IMAGE_URL}
+                alt="Green digital plant growing from a microchip representing AI-powered analytics"
+                className="hero-media-img"
+              />
+            </div>
+            <div className="hero-media-status-card">
+              <div className="hero-status-row">
+                <GlassIcon name="esp32" />
+                <span>Dual ESP32 nodes online</span>
+              </div>
+              <div className="hero-status-row">
+                <GlassIcon name="watering" />
+                <span>Smart watering ready</span>
+              </div>
+              <div className="hero-status-row">
+                <GlassIcon name="ai" />
+                <span>AI disease detection active</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
