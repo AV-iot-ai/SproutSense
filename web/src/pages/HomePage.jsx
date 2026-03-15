@@ -342,69 +342,8 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section id="testimonials" className="content-section testimonials-bg reveal-on-scroll">
-        <div className="section-container">
-          <h2 className="section-center-title">What Early Users Are Saying</h2>
-          <div className="testimonials-grid scroll-stack">
-            <div className="testimonial-card star-border" style={{ '--stack-index': 0 }}>
-              <div className="stars">⭐⭐⭐⭐⭐</div>
-              <p>
-                "My plants have never been healthier! The automatic watering is a game-changer, 
-                and I love getting alerts about what my plant needs."
-              </p>
-              <div className="testimonial-author">- Urban Gardener</div>
-            </div>
-            <div className="testimonial-card star-border" style={{ '--stack-index': 1 }}>
-              <div className="stars">⭐⭐⭐⭐⭐</div>
-              <p>
-                "Perfect for busy professionals. I can monitor everything from my phone, even 
-                when I'm at work or traveling."
-              </p>
-              <div className="testimonial-author">- Plant Enthusiast</div>
-            </div>
-            <div className="testimonial-card star-border" style={{ '--stack-index': 2 }}>
-              <div className="stars">⭐⭐⭐⭐⭐</div>
-              <p>
-                "The AI disease detection caught a problem early that I would have missed. Saved 
-                my favorite plant!"
-              </p>
-              <div className="testimonial-author">- Home Gardener</div>
-            </div>
-          </div>
-          <p className="testimonials-note">
-            Beta testers reported healthier plants, appreciated the convenience, and loved the "wow" 
-            factor of voice-controlled plant care.
-          </p>
-        </div>
-      </section>
-
-      {/* Final CTA */}
-      <section id="final-cta" className="cta-section reveal-on-scroll">
-        <div className="section-container">
-          <div className="final-cta-card star-border">
-            <h2>Ready to Give Your Plants a Smart Upgrade?</h2>
-            <p>
-              Set up SproutSense once and let it handle monitoring, watering, and early disease 
-              detection—so your plants thrive even on your busiest days.
-            </p>
-            <div className="cta-buttons">
-              <button className="btn btn-primary cta-btn" onClick={() => navigate('/controls')}>
-                <GlassIcon name="kit" />
-                Buy SproutSense Kit
-              </button>
-              <button className="btn btn-secondary cta-btn" onClick={() => scrollToSection('how-it-works')}>
-                <GlassIcon name="demo" />
-                Request a Demo
-              </button>
-              <button className="btn btn-success cta-btn" onClick={() => scrollToSection('features')}>
-                <GlassIcon name="guide" />
-                Download Setup Guide
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
+      
+      
     </div>
   );
 };
