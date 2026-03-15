@@ -1,4 +1,7 @@
 {
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "dependencies": {
     "react-gauge-chart": "^0.5.1"
   }
