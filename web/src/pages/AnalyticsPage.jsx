@@ -305,8 +305,9 @@ export default function AnalyticsPage() {
                     stroke={activeMetricInfo.color}
                     strokeWidth={2.4}
                     fill="url(#activeMetricGradient)"
-                    name={`${activeMetricInfo.label}$
-                      {activeMetricInfo.unit ? ` (${activeMetricInfo.unit})` : ''}`}
+                    name={`${activeMetricInfo.label}${
+                      activeMetricInfo.unit ? ` (${activeMetricInfo.unit})` : ''
+                    }`}
                     dot={false}
                     activeDot={{ r: 5 }}
                     isAnimationActive
@@ -478,7 +479,7 @@ export default function AnalyticsPage() {
                       <td className="records-ts">{formatTimestamp(rec.timestamp)}</td>
                       <td>
                         <span
-                          className={`records-val$${
+                          className={`records-val${
                             rec.soilMoisture < 20 ? ' warn' : ''
                           }`}
                         >
@@ -489,7 +490,7 @@ export default function AnalyticsPage() {
                       </td>
                       <td>
                         <span
-                          className={`records-val$${
+                          className={`records-val${
                             rec.temperature > 38 ? ' warn' : ''
                           }`}
                         >
@@ -502,7 +503,7 @@ export default function AnalyticsPage() {
                       <td>{rec.light !== undefined ? `${rec.light} lux` : '--'}</td>
                       <td>
                         <span
-                          className={`records-val$${
+                          className={`records-val${
                             rec.pH !== undefined &&
                             (rec.pH < 5.5 || rec.pH > 7.5)
                               ? ' warn'
