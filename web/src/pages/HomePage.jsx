@@ -1,8 +1,110 @@
-// web/src/pages/HomePage.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GlassIcon } from '../components/GlassIcon';
 import '../styles/HomePage.css';
+
+// React-style mini sections for homepage
+const UseCaseTabs = () => {
+  const [active, setActive] = useState('home');
+
+  const cases = [
+    {
+      id: 'home',
+      label: 'Home Plants',
+      icon: 'leaf',
+      desc: 'Keep indoor plants perfectly watered with automatic pump control and live health stats.',
+    },
+    {
+      id: 'balcony',
+      label: 'Balcony Garden',
+      icon: 'sprout',
+      desc: 'Track sunlight, moisture and pH for balcony grow bags and pots using compact sensor nodes.',
+    },
+    {
+      id: 'farm',
+      label: 'Small Farm',
+      icon: 'monitoring',
+      desc: 'Log multi-day soil trends, watering cycles and AI disease detections for small plots or labs.',
+    },
+  ];
+
+  const activeCase = cases.find((c) => c.id === active) || cases[0];
+
+  return (
+    <section className="overview-section">
+      <div className="section-container">
+        <h2 className="section-title">Where can you use SproutSense?</h2>
+        <div className="quick-actions-grid" style={{ marginBottom: '1.5rem' }}>
+          {cases.map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              className="quick-action-btn"
+              onClick={() => setActive(c.id)}
+              style={
+                active === c.id
+                  ? {
+                      background: 'var(--color-primary)',
+                      color: '#ffffff',
+                      borderColor: 'var(--color-primary)',
+                    }
+                  : undefined
+              }
+            >
+              <GlassIcon name={c.icon} className="qa-icon" />
+              <span>{c.label}</span>
+            </button>
+          ))}
+        </div>
+        <div className="overview-grid">
+          <div className="overview-card">
+            <h3>{activeCase.label}</h3>
+            <p>{activeCase.desc}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const HowItWorks = () => {
+  const steps = [
+    {
+      title: 'Sense',
+      icon: 'sensors',
+      desc: 'ESP32-SENSOR-001 reads soil moisture, temperature, humidity, pH, NPK and light using WiFi-safe ADC1 pins.',
+    },
+    {
+      title: 'Think',
+      icon: 'ai',
+      desc: 'ESP32-CAM-001 captures leaf images and runs Edge Impulse models for early disease and growth stage detection.',
+    },
+    {
+      title: 'Act',
+      icon: 'watering',
+      desc: 'Node.js backend stores data in MongoDB, triggers the pump via APIs and pushes alerts and analytics to the React dashboard.',
+    },
+  ];
+
+  return (
+    <section className="tech-stack-section">
+      <div className="section-container">
+        <h2 className="section-title">How SproutSense Works</h2>
+        <div className="tech-stack-grid">
+          {steps.map((step) => (
+            <div key={step.title} className="tech-stack-card">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                <GlassIcon name={step.icon} />
+                <h3>{step.title}</h3>
+              </div>
+              <p>{step.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
 
 const HomePage = ({ theme, sensors, isConnected }) => {
   const navigate = useNavigate();
@@ -217,6 +319,9 @@ const HomePage = ({ theme, sensors, isConnected }) => {
         </div>
       </section>
 
+      {/* USE CASE TABS */}
+      <UseCaseTabs />
+
       {/* OVERVIEW */}
       <section className="overview-section">
         <div className="section-container">
@@ -253,6 +358,9 @@ const HomePage = ({ theme, sensors, isConnected }) => {
           </div>
         </div>
       </section>
+
+      {/* HOW IT WORKS */}
+      <HowItWorks />
 
       {/* FEATURES */}
       <section className="features-section-new">
@@ -372,7 +480,7 @@ const HomePage = ({ theme, sensors, isConnected }) => {
               <GlassIcon name="records" className="qa-icon" />
               <span>History</span>
             </button>
-            <button className="quick-action-btn" onClick={() => navigate('/settings')}>
+            <button className="quick-action-btn" onClick={() => navigate('/settings`}>
               <GlassIcon name="settings" className="qa-icon" />
               <span>Settings</span>
             </button>
