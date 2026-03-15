@@ -1,192 +1,8 @@
+// web/src/pages/HomePage.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GlassIcon } from '../components/GlassIcon';
 import '../styles/HomePage.css';
-
-// React-style mini sections for homepage
-const UseCaseTabs = () => {
-  const [active, setActive] = useState('home');
-
-  const cases = [
-    {
-      id: 'home',
-      label: 'Home Plants',
-      icon: 'leaf',
-      desc: 'Keep indoor plants perfectly watered with automatic pump control and live health stats.',
-    },
-    {
-      id: 'balcony',
-      label: 'Balcony Garden',
-      icon: 'sprout',
-      desc: 'Track sunlight, moisture and pH for balcony grow bags and pots using compact sensor nodes.',
-    },
-    {
-      id: 'farm',
-      label: 'Small Farm',
-      icon: 'monitoring',
-      desc: 'Log multi-day soil trends, watering cycles and AI disease detections for small plots or labs.',
-    },
-  ];
-
-  const activeCase = cases.find((c) => c.id === active) || cases[0];
-
-  return (
-    <section className="overview-section">
-      <div className="section-container">
-        <h2 className="section-title">Where can you use SproutSense?</h2>
-        <div className="quick-actions-grid" style={{ marginBottom: '1.5rem' }}>
-          {cases.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              className="quick-action-btn"
-              onClick={() => setActive(c.id)}
-              style={
-                active === c.id
-                  ? {
-                      background: 'var(--color-primary)',
-                      color: '#ffffff',
-                      borderColor: 'var(--color-primary)',
-                    }
-                  : undefined
-              }
-            >
-              <GlassIcon name={c.icon} className="qa-icon" />
-              <span>{c.label}</span>
-            </button>
-          ))}
-        </div>
-        <div className="overview-grid">
-          <div className="overview-card">
-            <h3>{activeCase.label}</h3>
-            <p>{activeCase.desc}</p>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-};
-
-const HowItWorks = () => {
-  const steps = [
-    {
-      title: 'Sense',
-      icon: 'sensors',
-      desc: 'ESP32-SENSOR-001 reads soil moisture, temperature, humidity, pH, NPK and light using WiFi-safe ADC1 pins.',
-    },
-    {
-      title: 'Think',
-      icon: 'ai',
-      desc: 'ESP32-CAM-001 captures leaf images and runs Edge Impulse models for early disease and growth stage detection.',
-    },
-    {
-      title: 'Act',
-      icon: 'watering',
-      desc: 'Node.js backend stores data in MongoDB, triggers the pump via APIs and pushes alerts and analytics to the React dashboard.',
-    },
-  ];
-
-  return (
-    <section className="tech-stack-section">
-      <div className="section-container">
-        <h2 className="section-title">How SproutSense Works</h2>
-        <div className="tech-stack-grid">
-          {steps.map((step) => (
-            <div key={step.title} className="tech-stack-card">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                <GlassIcon name={step.icon} />
-                <h3>{step.title}</h3>
-              </div>
-              <p>{step.desc}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-};
-
-const FoodImpactSection = () => {
-  const problems = [
-    {
-      title: 'Water wastage in irrigation',
-      text:
-        'Traditional flood irrigation can waste more than half of the applied water through evaporation and runoff, especially in hot regions.',
-    },
-    {
-      title: 'Nutrient imbalance & soil fatigue',
-      text:
-        'Overuse of chemical fertilisers and under-monitoring of pH/NPK lead to nutrient lock-out, poor yields and long-term soil damage.',
-    },
-    {
-      title: 'Late detection of plant diseases',
-      text:
-        'Farmers often notice diseases only after visible wilting or leaf loss, when yield loss is already high and treatment is costly.',
-    },
-  ];
-
-  const solutions = [
-    {
-      title: 'Precision irrigation from sensors',
-      text:
-        'Soil-moisture thresholds and live readings trigger watering only when needed, reducing overwatering and saving water.',
-    },
-    {
-      title: 'Continuous soil health tracking',
-      text:
-        'pH, NPK and climate sensors show when fertiliser or amendments are actually required, preventing waste and protecting soil.',
-    },
-    {
-      title: 'On-device AI disease alerts',
-      text:
-        'ESP32-CAM with Edge Impulse models flags leaf diseases at an early stage so farmers can act before losses compound.',
-    },
-  ];
-
-  return (
-    <section className="food-section">
-      <div className="section-container">
-        <h2 className="section-title">Food System Problems & How SproutSense Helps</h2>
-        <p className="food-intro">
-          Modern food production struggles with water scarcity, unpredictable weather and fast-spreading plant diseases.
-          SproutSense turns every pot, plot or polyhouse into a monitored, data-driven environment instead of guesswork.
-        </p>
-
-        <div className="food-section-grid">
-          <div className="food-card">
-            <h3>Current Challenges</h3>
-            <ul className="food-list">
-              {problems.map((item) => (
-                <li key={item.title} className="food-list-item">
-                  <span className="food-dot" />
-                  <div>
-                    <p className="food-list-title">{item.title}</p>
-                    <p className="food-list-text">{item.text}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="food-card">
-            <h3>How SproutSense Responds</h3>
-            <ul className="food-list">
-              {solutions.map((item) => (
-                <li key={item.title} className="food-list-item">
-                  <span className="food-dot food-dot-success" />
-                  <div>
-                    <p className="food-list-title">{item.title}</p>
-                    <p className="food-list-text">{item.text}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-};
 
 const HomePage = ({ theme, sensors, isConnected }) => {
   const navigate = useNavigate();
@@ -401,9 +217,6 @@ const HomePage = ({ theme, sensors, isConnected }) => {
         </div>
       </section>
 
-      {/* USE CASE TABS */}
-      <UseCaseTabs />
-
       {/* OVERVIEW */}
       <section className="overview-section">
         <div className="section-container">
@@ -440,12 +253,6 @@ const HomePage = ({ theme, sensors, isConnected }) => {
           </div>
         </div>
       </section>
-
-      {/* HOW IT WORKS */}
-      <HowItWorks />
-
-      {/* FOOD SYSTEM IMPACT */}
-      <FoodImpactSection />
 
       {/* FEATURES */}
       <section className="features-section-new">
