@@ -1,0 +1,41 @@
+/* Icon sizing utilities for GlassIcon */
+.glass-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.glass-icon svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.glass-icon-sm svg {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+.glass-icon-md svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.glass-icon-lg svg {
+  width: 1.45rem;
+  height: 1.45rem;
+}
+
+.glass-icon-xl svg {
+  width: 1.8rem;
+  height: 1.8rem;
+}
+
+/* Status and metric icon wrappers reuse existing metric-icon / card-title-icon etc. */
+.metric-icon .glass-icon svg,
+.card-title-icon .glass-icon svg,
+.status-item-header .glass-icon svg,
+.config-info-item .glass-icon svg,
+.control-section-title .glass-icon svg {
+  width: 0.9rem;
+  height: 0.9rem;
+}
