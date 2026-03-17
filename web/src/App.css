@@ -50,6 +50,9 @@
   --theme-drift-x: 0px;
   --theme-drift-y: 0px;
 
+  /* Layout spacing shared between navbar and page sections */
+  --layout-horizontal-padding: 2rem;
+
 }
 
 /* Light Mode Variables */
@@ -732,8 +735,8 @@ a:focus-visible {
   justify-content: space-between;
   gap: 1rem;
   margin-bottom: 1.5rem;
-  padding: 1rem 1.25rem;
-  min-height: 4.5rem;
+  padding: 1.25rem var(--layout-horizontal-padding); /* increased horizontal padding for wider navbar */
+  min-height: 5rem;     /* slightly taller navbar */
   border: var(--glass-border);
   border-radius: 1rem;
   background: var(--glass-color);
@@ -1072,11 +1075,32 @@ a:focus-visible {
 }
 
 .container {
-  max-width: 1360px;
+  max-width: 1500px; /* increased base container width */
   margin: 0 auto;
   padding: 2rem;
-  padding-left: max(2rem, env(safe-area-inset-left));
-  padding-right: max(2rem, env(safe-area-inset-right));
+  padding-left: max(var(--layout-horizontal-padding), env(safe-area-inset-left));
+  padding-right: max(var(--layout-horizontal-padding), env(safe-area-inset-right));
+}
+
+/* Global: widen common section containers for sensors, analytics, alerts, controls, etc. */
+@media (min-width: 1024px) {
+  section,
+  .section-container,
+  .section-card,
+  .content-section,
+  .problem-grid,
+  .stats-section,
+  .overview-grid,
+  .graph-container,
+  .graph-display,
+  .container {
+    max-width: 1500px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--layout-horizontal-padding);
+    padding-right: var(--layout-horizontal-padding);
+    width: 100%;
+  }
 }
 
 .dashboard-section {
@@ -2261,6 +2285,25 @@ header h1 {
     padding: 1.5rem;
   }
 
+  /* Ensure page sections and graphs constrain on tablet */
+  section,
+  .section-container,
+  .section-card,
+  .content-section,
+  .problem-grid,
+  .stats-section,
+  .overview-grid,
+  .graph-container,
+  .graph-display,
+  .container {
+    max-width: 1100px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: calc(var(--layout-horizontal-padding) * 0.75);
+    padding-right: calc(var(--layout-horizontal-padding) * 0.75);
+    width: 100%;
+  }
+
   .dashboard {
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   }
@@ -2353,6 +2396,25 @@ header h1 {
 
   .container {
     padding: 1rem;
+  }
+
+  /* Make section containers fluid and compact on small tablets */
+  section,
+  .section-container,
+  .section-card,
+  .content-section,
+  .problem-grid,
+  .stats-section,
+  .overview-grid,
+  .graph-container,
+  .graph-display,
+  .container {
+    max-width: 100%;
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    width: 100%;
   }
 
   header h1 {
@@ -2575,6 +2637,25 @@ header h1 {
 
   .container {
     padding: 0.75rem;
+  }
+
+  /* Tighten section spacing for very small screens */
+  section,
+  .section-container,
+  .section-card,
+  .content-section,
+  .problem-grid,
+  .stats-section,
+  .overview-grid,
+  .graph-container,
+  .graph-display,
+  .container {
+    max-width: 100%;
+    margin-left: 0.35rem;
+    margin-right: 0.35rem;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    width: 100%;
   }
 
   header h1 {
@@ -3280,4 +3361,58 @@ button[disabled] .glass-icon-animated svg {
   .card {
     padding: 2rem;
   }
+}
+
+/* Mid-range desktops (between main desktop and extra-large) */
+@media (min-width: 1025px) and (max-width: 1439px) {
+  section,
+  .section-container,
+  .section-card,
+  .content-section,
+  .problem-grid,
+  .stats-section,
+  .overview-grid,
+  .graph-container,
+  .graph-display,
+  .container {
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--layout-horizontal-padding);
+    padding-right: var(--layout-horizontal-padding);
+    width: 100%;
+  }
+}
+
+/* Responsive helpers: images, SVGs, canvases, videos */
+img,
+picture,
+video,
+svg,
+canvas {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Ensure graph and wide tables scroll gracefully on small screens */
+.graph-container,
+.graph-display,
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Fluid typography adjustments for better readability on small devices */
+@media (max-width: 1024px) {
+  html { font-size: 15px; }
+}
+
+@media (max-width: 768px) {
+  html { font-size: 14px; }
+}
+
+@media (max-width: 480px) {
+  html { font-size: 13px; }
 }
