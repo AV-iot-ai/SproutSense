@@ -3,8 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GlassIcon } from '../../components/bits/GlassIcon';
 import ScrollVelocity from '../../components/bits/ScrollVelocity';
-import '../styles/HomePage.css';
-import '../styles/ScrollVelocity.css';
+import './HomePage.css';
+
+import '../../components/bits/ScrollVelocity.css';
 
 const HomePage = ({ theme, sensors, isConnected }) => {
   const navigate = useNavigate();

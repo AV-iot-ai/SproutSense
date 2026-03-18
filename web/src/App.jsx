@@ -25,21 +25,23 @@ import { useWebSocket } from './hooks/useWebSocket';
 import { configAPI, sensorAPI, wateringAPI, aiAPI } from './utils/api';
 
 // ── Shared components ──────────────────────────────────────────────────────
-import { Navbar }          from './components/Navbar';         // navbar (legacy import — mapped to Navbar)
+import { Navbar }          from './components/layout/Navbar';    // Ensure this path is correct!
 import { SensorCard }      from './components/SensorCard';
 import { ControlCard }     from './components/ControlCard';
 import { AIRecommendation }from './components/AIRecommendation';
 import { ConfigCard }      from './components/ConfigCard';
 import { Notification }    from './components/Notification';
-import { GlassIcon }       from './components/bits/GlassIcon';
+import { GlassIcon }       from './components/bits/GlassIcon';   // Make sure this matches your React Bits structure
 
-// ── Pages (original flat paths — new sub-folder pages re-export these) ────
+
+// ── Pages ────────────────────────────────────────────────────────────────
 import HomePage      from './pages/Home/HomePage';
-import SettingsPage  from './pages/SettingsPage';
-import AnalyticsPage from './pages/AnalyticsPage';
-import AlertsPage    from './pages/AlertsPage';
-import AIChat        from './pages/AIChat';
-import InsightsPage  from './pages/InsightsPage';
+import SettingsPage  from './pages/Settings/SettingsPage';
+import AnalyticsPage from './pages/Analytics/AnalyticsPage';
+import AlertsPage    from './pages/Alerts/AlertsPage';       // <-- Update this
+import AIChat        from './pages/AIChat/AIChat';           // <-- Update this
+import InsightsPage  from './pages/Insights/InsightsPage';   // <-- Update this
+
 
 // ── Styles ─────────────────────────────────────────────────────────────────
 import './App.css';

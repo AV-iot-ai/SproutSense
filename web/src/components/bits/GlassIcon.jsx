@@ -1,4 +1,5 @@
 import React from 'react';
+import './glassicon.css';
 
 const iconPaths = {
   home: 'M3 11.2 12 3.8l9 7.4 M6.5 10.2V20h11V10.2',

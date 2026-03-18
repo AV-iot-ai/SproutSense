@@ -22,6 +22,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { GlassIcon } from '../bits/GlassIcon';
+import './styles/Navbar.css';
 
 export function Navbar({
   currentPage,

@@ -1,8 +1,12 @@
-import './AnalyticsPage.css';
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { aiAPI, sensorAPI } from '../utils/api';
-import { formatDiseaseName } from '../utils/formatters';
-import { GlassIcon } from '../components/bits/GlassIcon';
+import "./AnalyticsPage.css";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+
+// Add an extra '../' to these imports:
+import { aiAPI, sensorAPI } from "../../utils/api";
+import { formatDiseaseName } from "../../utils/formatters";
+import { GlassIcon } from "../../components/bits/GlassIcon";
+
+
 import {
   AreaChart,
   Area,

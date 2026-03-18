@@ -21,7 +21,7 @@
  */
 import React from 'react';
 import Sidebar from './Sidebar';
-import '../layout/Layout.css';
+import './styles/Layout.css';
 
 export function Layout({
   children,

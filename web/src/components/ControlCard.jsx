@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { GlassIcon } from './bits/GlassIcon';
 import ElasticSlider from './bits/ElasticSlider';
 import { configAPI, wateringAPI } from '../utils/api';
+import './styles/ControlCard.css';
 
 export function ControlCard({
   pumpActive,

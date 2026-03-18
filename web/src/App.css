@@ -1,5 +1,5 @@
 /* web/src/App.css */
-@import './styles/tokens.css';
+@import './styles/variables.css';
 @import './styles/global.css';
 @import './styles/theme-transitions.css';
 @import './styles/layout.css';

@@ -18,7 +18,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { GlassIcon } from '../bits/GlassIcon';
-import '../layout/Sidebar.css';
+import './styles/Sidebar.css';
 
 // Converts a status string to a human-readable label
 function statusLabel(status) {
