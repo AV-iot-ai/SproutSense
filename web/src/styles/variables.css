@@ -6,8 +6,7 @@
  * and animation tokens used across all pages and components.
  *
  * Source: SINGLE source of truth for design tokens
- * Overrides: App.css bloat (removed), local duplicates
- * Usage: Import once in main.jsx or index.html
+ * Usage: Import as the VERY FIRST file in App.css
  */
 
 :root {
@@ -57,7 +56,13 @@
      ───────────────────────────────────────────────── */
   --card-bg: rgba(9, 28, 44, 0.54);   /* Card background */
   --border-color: rgba(80, 160, 200, 0.16); /* Subtle border */
-  --sidebar-bg: rgba(5, 15, 24, 0.9); /* Sidebar background */
+  
+  /* Sidebar Specifics */
+  --sidebar-bg: rgba(5, 15, 24, 0.9);
+  --sidebar-hover: rgba(20, 184, 166, 0.07);
+  --sidebar-active: rgba(20, 184, 166, 0.18);
+  --sidebar-active-text: var(--plant-teal);
+  --sidebar-border: rgba(20, 184, 166, 0.14);
 
   /* ─────────────────────────────────────────────────
      Glow & Shadow Effects — for depth
@@ -68,6 +73,13 @@
   --glow-plant: rgba(34, 197, 94, 0.2);       /* Plant green glow */
   --glow-teal: rgba(20, 184, 166, 0.18);      /* Teal glow */
   --glow-warning: rgba(245, 158, 11, 0.2);    /* Amber glow */
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.04);
+  --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.06);
 
   /* ─────────────────────────────────────────────────
      Hover & Interactive States
@@ -114,18 +126,12 @@
   --space-12: 3rem;     /* 48px */
   --space-16: 4rem;     /* 64px */
 
-  /* ─────────────────────────────────────────────────
-     Layout Gaps — for grid/flex layouts
-     ───────────────────────────────────────────────── */
   --gap-xs: 0.5rem;     /* 8px */
   --gap-sm: 1rem;       /* 16px */
   --gap-md: 1.5rem;     /* 24px */
   --gap-lg: 2rem;       /* 32px */
   --gap-xl: 3rem;       /* 48px */
 
-  /* ─────────────────────────────────────────────────
-     Padding Standards
-     ───────────────────────────────────────────────── */
   --padding-xs: 0.5rem;  /* 8px */
   --padding-sm: 0.75rem; /* 12px */
   --padding-md: 1rem;    /* 16px */
@@ -142,17 +148,7 @@
   --radius-full: 9999px;  /* Pill-shaped */
 
   /* ═══════════════════════════════════════════════════
-     SHADOWS — Depth layers
-     ═══════════════════════════════════════════════════ */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.04);
-  --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.06);
-
-  /* ═══════════════════════════════════════════════════
-     TRANSITIONS & ANIMATIONS
+     TRANSITIONS & ANIMATIONS (Merged with theme sweep)
      ═══════════════════════════════════════════════════ */
   --duration-fast: 150ms;
   --duration-normal: 250ms;
@@ -161,31 +157,48 @@
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-bounce: cubic-bezier(0.22, 1, 0.36, 1);
 
+  /* Theme transition sweep defaults */
+  --theme-sweep-from-x: -140%;
+  --theme-sweep-from-y: 0%;
+  --theme-sweep-to-x: 140%;
+  --theme-sweep-to-y: 0%;
+  --theme-sweep-angle: 90deg;
+  --theme-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --theme-scale: 1;
+  --theme-blur: 0px;
+  --theme-drift-x: 0px;
+  --theme-drift-y: 0px;
+
   /* ═══════════════════════════════════════════════════
      LAYOUT — Fixed dimensions
      ═══════════════════════════════════════════════════ */
   --sidebar-width: 260px;          /* Fixed sidebar width */
-   --navbar-height: 60px;           /* Navbar height */
+  --navbar-height: 60px;           /* Navbar height */
   --container-max-width: 1400px;   /* Content max-width */
   --container-padding: 2rem;       /* Default container padding */
+  --layout-horizontal-padding: 2rem; /* Shared layout padding */
 
-  /* ─────────────────────────────────────────────────
-     Breakpoints — responsive design
-     ───────────────────────────────────────────────── */
-  /* Note: Use in media queries as:
-     @media (max-width: 640px) { ... }
-  */
+  /* Breakpoints */
   --breakpoint-sm: 640px;
   --breakpoint-md: 768px;
   --breakpoint-lg: 1024px;
   --breakpoint-xl: 1280px;
   --breakpoint-2xl: 1536px;
+
+  /* Tells browser UI to match the theme */
+  color-scheme: light dark; 
 }
 
 /* ═══════════════════════════════════════════════════
    LIGHT MODE OVERRIDES
    ═══════════════════════════════════════════════════ */
 [data-theme="light"] {
+  /* Core Colors */
+  --primary-color: #0284c7;         /* Darker sky blue for contrast */
+  --danger-color: #ef4444;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+
   /* Light mode background layers */
   --bg-color: #f0f8ff;              /* Light blue-tinted white */
   --bg-secondary: #e8f5ec;          /* Light mint */
@@ -206,7 +219,13 @@
   /* Light mode components */
   --card-bg: rgba(255, 255, 255, 0.52);
   --border-color: rgba(14, 100, 130, 0.12);
+  
+  /* Sidebar Overrides */
   --sidebar-bg: rgba(240, 252, 248, 0.94);
+  --sidebar-hover: rgba(20, 184, 166, 0.08);
+  --sidebar-active: rgba(20, 184, 166, 0.16);
+  --sidebar-active-text: var(--plant-teal);
+  --sidebar-border: rgba(20, 184, 166, 0.18);
 
   /* Light mode glows */
   --glow-primary: rgba(14, 165, 233, 0.18);
@@ -215,7 +234,4 @@
   --glow-plant: rgba(34, 197, 94, 0.16);
   --glow-teal: rgba(20, 184, 166, 0.14);
   --glow-warning: rgba(245, 158, 11, 0.16);
-
-  /* Light mode primary color for contrast */
-  --primary-color: #0284c7;         /* Darker sky blue */
 }
