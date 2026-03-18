@@ -1,0 +1,177 @@
+/**
+ * HomePage.css — pages/Home/
+ * Styles specific to the dashboard overview (HomePage).
+ *
+ * Sections:
+ *  1. Page wrapper and welcome card
+ *  2. Quick-link buttons
+ *  3. Sensor summary row
+ *  4. Animations
+ */
+
+/* ─────────────────────────────────────────
+   1. PAGE WRAPPER & WELCOME CARD
+───────────────────────────────────────── */
+.home-section {
+  min-height: calc(100vh - 200px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-welcome {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  animation: welcomeFadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.welcome-card {
+  background: var(--glass-color);
+  border: var(--glass-border);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+  border-radius: 2rem;
+  padding: 3rem;
+  text-align: center;
+  box-shadow:
+    inset 0 0 50px rgba(255,255,255,0.05),
+    0 12px 48px rgba(0,0,0,0.2),
+    0 0 1px rgba(14,165,233,0.3);
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.24s ease, box-shadow 0.24s ease, transform 0.24s ease;
+}
+
+/* Subtle top gradient overlay on the card */
+.welcome-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  height: 45%;
+  background: linear-gradient(180deg, rgba(14,165,233,0.11) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.welcome-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(14,165,233,0.3);
+}
+
+.welcome-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, var(--primary-color), var(--success-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
+  z-index: 1;
+}
+
+.welcome-subtitle {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+  font-weight: 500;
+  position: relative;
+  z-index: 1;
+}
+
+.welcome-content {
+  margin-bottom: 2.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.welcome-content p {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* ─────────────────────────────────────────
+   2. QUICK-LINK BUTTONS
+───────────────────────────────────────── */
+.quick-links {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
+}
+
+.quick-link-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.75rem;
+  background: var(--sidebar-hover);
+  border: 2px solid var(--border-color);
+  border-radius: 0.85rem;
+  color: var(--text-color);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.quick-link-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--primary-color), var(--success-color));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.quick-link-btn:hover::before { opacity: 0.15; }
+
+.quick-link-btn:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary-color);
+  box-shadow: 0 10px 22px rgba(2,6,23,0.16);
+  color: var(--primary-color);
+}
+
+.quick-link-btn:nth-child(1) { animation: linkSlideIn 0.5s cubic-bezier(0.4,0,0.2,1) 0.3s backwards; }
+.quick-link-btn:nth-child(2) { animation: linkSlideIn 0.5s cubic-bezier(0.4,0,0.2,1) 0.4s backwards; }
+.quick-link-btn:nth-child(3) { animation: linkSlideIn 0.5s cubic-bezier(0.4,0,0.2,1) 0.5s backwards; }
+
+.quick-link-icon {
+  font-size: 1.5rem;
+  display: inline-flex;
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+
+.quick-link-btn:hover .quick-link-icon { transform: scale(1.07); }
+
+/* ─────────────────────────────────────────
+   3. SENSOR SUMMARY ROW
+───────────────────────────────────────── */
+.home-sensor-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 2rem;
+}
+
+/* ─────────────────────────────────────────
+   4. ANIMATIONS
+───────────────────────────────────────── */
+@keyframes welcomeFadeIn {
+  from { opacity: 0; transform: translateY(40px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+
+@keyframes linkSlideIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.9); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);   }
+}

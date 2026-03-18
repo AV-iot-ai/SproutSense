@@ -1,0 +1,146 @@
+/**
+ * InsightsPage.css — pages/Insights/
+ * Styles for the AI insights panel page.
+ *
+ * Sections:
+ *  1. Page header
+ *  2. Insight cards grid
+ *  3. Disease detection result card
+ *  4. Confidence bar
+ *  5. Image preview
+ *  6. Responsive
+ */
+
+/* ─────────────────────────────────────────
+   1. PAGE HEADER
+───────────────────────────────────────── */
+.insights-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.75rem;
+}
+
+.insights-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-color);
+  letter-spacing: -0.02em;
+}
+
+/* ─────────────────────────────────────────
+   2. INSIGHT CARDS GRID
+───────────────────────────────────────── */
+.insights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.insight-card {
+  background: var(--glass-color);
+  border: var(--glass-border);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+  border-radius: 1.25rem;
+  padding: 1.5rem;
+  transition: border-color 0.22s ease, transform 0.22s ease;
+}
+
+.insight-card:hover {
+  border-color: rgba(20,184,166,0.3);
+  transform: translateY(-2px);
+}
+
+.insight-card__heading {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
+  margin-bottom: 0.75rem;
+}
+
+.insight-card__text {
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--text-secondary);
+}
+
+/* ─────────────────────────────────────────
+   3. DISEASE DETECTION RESULT CARD
+───────────────────────────────────────── */
+.disease-card {
+  border-color: rgba(239,68,68,0.28);
+  box-shadow: 0 0 16px rgba(239,68,68,0.08);
+}
+
+.disease-card.healthy {
+  border-color: rgba(34,197,94,0.28);
+  box-shadow: 0 0 16px rgba(34,197,94,0.08);
+}
+
+.disease-card__name {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--danger-color);
+  margin-bottom: 0.5rem;
+}
+
+.disease-card.healthy .disease-card__name {
+  color: var(--success-color);
+}
+
+/* ─────────────────────────────────────────
+   4. CONFIDENCE BAR
+───────────────────────────────────────── */
+.confidence-bar-wrap {
+  margin-top: 0.75rem;
+}
+
+.confidence-bar-label {
+  font-size: 0.8rem;
+  color: var(--text-tertiary);
+  margin-bottom: 0.35rem;
+}
+
+.confidence-bar-track {
+  height: 6px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.confidence-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--plant-teal), var(--plant-green));
+  transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ─────────────────────────────────────────
+   5. IMAGE PREVIEW
+───────────────────────────────────────── */
+.disease-image-wrap {
+  margin-top: 1rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: var(--glass-border);
+}
+
+.disease-image-wrap img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+/* ─────────────────────────────────────────
+   6. RESPONSIVE
+───────────────────────────────────────── */
+@media (max-width: 640px) {
+  .insights-grid {
+    grid-template-columns: 1fr;
+  }
+}

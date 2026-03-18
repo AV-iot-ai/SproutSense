@@ -1,0 +1,150 @@
+/**
+ * RecordsPage.css — pages/Records/
+ * Styles for the sensor history table page.
+ *
+ * Sections:
+ *  1. Page header
+ *  2. Filter bar
+ *  3. Data table
+ *  4. Pagination controls
+ *  5. Responsive overrides
+ */
+
+/* ─────────────────────────────────────────
+   1. PAGE HEADER
+───────────────────────────────────────── */
+.records-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.records-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-color);
+  letter-spacing: -0.02em;
+}
+
+/* ─────────────────────────────────────────
+   2. FILTER BAR
+───────────────────────────────────────── */
+.records-filters {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.records-filter-input,
+.records-filter-select {
+  padding: 0.55rem 0.85rem;
+  background: rgba(255,255,255,0.05);
+  border: var(--glass-border);
+  border-radius: 0.65rem;
+  color: var(--text-color);
+  font-size: 0.9rem;
+  min-width: 140px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.records-filter-input:focus,
+.records-filter-select:focus {
+  outline: none;
+  border-color: rgba(14,165,233,0.35);
+  box-shadow: 0 0 0 3px var(--glow-primary);
+}
+
+/* ─────────────────────────────────────────
+   3. DATA TABLE
+───────────────────────────────────────── */
+.records-table-wrap {
+  overflow-x: auto;
+  border-radius: 1rem;
+  border: var(--glass-border);
+}
+
+.records-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.records-table th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
+  background: rgba(255,255,255,0.04);
+  white-space: nowrap;
+}
+
+.records-table td {
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.records-table tr:hover td {
+  background: rgba(20,184,166,0.04);
+  color: var(--text-color);
+}
+
+/* ─────────────────────────────────────────
+   4. PAGINATION
+───────────────────────────────────────── */
+.records-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.records-page-btn {
+  padding: 0.4rem 0.85rem;
+  background: rgba(255,255,255,0.05);
+  border: var(--glass-border);
+  border-radius: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.records-page-btn:hover:not(:disabled) {
+  background: rgba(20,184,166,0.1);
+  color: var(--plant-teal);
+  border-color: rgba(20,184,166,0.3);
+}
+
+.records-page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.records-page-btn.active {
+  background: rgba(20,184,166,0.18);
+  color: var(--plant-teal);
+  border-color: rgba(20,184,166,0.36);
+  font-weight: 600;
+}
+
+/* ─────────────────────────────────────────
+   5. RESPONSIVE
+───────────────────────────────────────── */
+@media (max-width: 768px) {
+  .records-header { flex-direction: column; align-items: flex-start; }
+  .records-filters { flex-direction: column; width: 100%; }
+  .records-filter-input,
+  .records-filter-select { width: 100%; }
+}

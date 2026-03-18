@@ -1,0 +1,146 @@
+/**
+ * AlertsPage.css — pages/Alerts/
+ * Styles for the active alerts list page.
+ *
+ * Sections:
+ *  1. Page header & clear-all button
+ *  2. Alert list container
+ *  3. Individual alert row
+ *  4. Alert type modifiers (error, warning, info, success)
+ *  5. Empty state
+ *  6. Responsive
+ */
+
+/* ─────────────────────────────────────────
+   1. PAGE HEADER
+───────────────────────────────────────── */
+.alerts-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.alerts-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-color);
+  letter-spacing: -0.02em;
+}
+
+.alerts-clear-btn {
+  padding: 0.5rem 1rem;
+  background: rgba(239,68,68,0.12);
+  border: 1px solid rgba(239,68,68,0.28);
+  border-radius: 0.65rem;
+  color: var(--danger-color);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.alerts-clear-btn:hover {
+  background: rgba(239,68,68,0.22);
+  border-color: rgba(239,68,68,0.5);
+}
+
+/* ─────────────────────────────────────────
+   2. ALERT LIST CONTAINER
+───────────────────────────────────────── */
+.alerts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* ─────────────────────────────────────────
+   3. INDIVIDUAL ALERT ROW
+───────────────────────────────────────── */
+.alert-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--glass-color);
+  border: var(--glass-border);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+  border-radius: 0.85rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  animation: alertSlideIn 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+
+@keyframes alertSlideIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+.alert-row__icon { flex-shrink: 0; font-size: 1.3rem; }
+.alert-row__body { flex: 1; min-width: 0; }
+
+.alert-row__message {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.alert-row__value {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin-top: 0.15rem;
+}
+
+.alert-row__time {
+  font-size: 0.78rem;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+.alert-row__dismiss {
+  background: transparent;
+  border: none;
+  color: var(--text-tertiary);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 0.35rem;
+  transition: color 0.2s ease;
+}
+
+.alert-row__dismiss:hover { color: var(--danger-color); }
+
+/* ─────────────────────────────────────────
+   4. TYPE MODIFIERS
+───────────────────────────────────────── */
+.alert-row--error   { border-color: rgba(239,68,68,0.32);  box-shadow: 0 0 12px rgba(239,68,68,0.1); }
+.alert-row--warning { border-color: rgba(245,158,11,0.32); box-shadow: 0 0 12px rgba(245,158,11,0.1); }
+.alert-row--info    { border-color: rgba(14,165,233,0.24); }
+.alert-row--success { border-color: rgba(34,197,94,0.28);  }
+
+/* ─────────────────────────────────────────
+   5. EMPTY STATE
+───────────────────────────────────────── */
+.alerts-empty {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--text-tertiary);
+  font-size: 1rem;
+}
+
+.alerts-empty__icon { font-size: 3rem; margin-bottom: 1rem; }
+
+/* ─────────────────────────────────────────
+   6. RESPONSIVE
+───────────────────────────────────────── */
+@media (max-width: 480px) {
+  .alert-row {
+    flex-wrap: wrap;
+  }
+  .alert-row__time { width: 100%; text-align: right; }
+}
