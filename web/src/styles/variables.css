@@ -1,123 +1,221 @@
 /**
- * variables.css — styles/
- * Global CSS custom properties (design tokens) for SproutSense.
+ * variables.css
+ * ─────────────────────────────────────────────────────
+ * Global CSS custom properties (variables) for SproutSense.
+ * Defines the complete color palette, typography, spacing,
+ * and animation tokens used across all pages and components.
  *
- * Sections:
- *  1. Brand / accent colors
- *  2. Plant palette
- *  3. Dark mode backgrounds
- *  4. Glassmorphism tokens
- *  5. Text colors
- *  6. Card & border
- *  7. Glow effects
- *  8. Theme transition sweep defaults
- *  9. Layout spacing
- * 10. Light mode overrides
- * 11. Dark mode sidebar overrides
+ * Source: SINGLE source of truth for design tokens
+ * Overrides: App.css bloat (removed), local duplicates
+ * Usage: Import once in main.jsx or index.html
  */
 
 :root {
-  /* 1. Brand colors — IoT Plant Theme */
-  --primary-color:  #0ea5e9;   /* sky / water blue */
-  --danger-color:   #ef4444;
-  --success-color:  #10b981;   /* emerald */
-  --warning-color:  #f59e0b;
+  /* ═══════════════════════════════════════════════════
+     COLOR PALETTE — Core Brand Colors
+     ═══════════════════════════════════════════════════ */
 
-  /* 2. Plant palette */
-  --plant-green: #22c55e;      /* natural leaf green */
-  --plant-teal:  #14b8a6;      /* IoT sensor teal */
-  --plant-cyan:  #22d3ee;      /* data highlight cyan */
-  --plant-leaf:  #4ade80;      /* light leaf accent */
+  /* Primary & Status Colors */
+  --primary-color: #0ea5e9;         /* Sky blue — actions, links */
+  --success-color: #10b981;         /* Emerald — positive states */
+  --warning-color: #f59e0b;         /* Amber — caution alerts */
+  --danger-color: #ef4444;          /* Red — errors, critical */
+  --info-color: #3b82f6;            /* Blue — informational */
 
-  /* 3. Dark backgrounds — deep forest-ocean night */
-  --bg-color:      #050d14;
-  --bg-secondary:  #091824;
-  --bg-tertiary:   #0f2535;
+  /* Plant-specific Accent Colors */
+  --plant-green: #22c55e;           /* Bright leaf green */
+  --plant-teal: #14b8a6;            /* Deep teal (sensors/IoT) */
+  --plant-cyan: #22d3ee;            /* Cyan — data highlights */
+  --plant-leaf: #4ade80;            /* Light leaf accent */
 
-  /* 4. Glassmorphism (dark) */
-  --glass-color:     rgba(9, 28, 44, 0.72);
-  --glass-color-alt: rgba(14, 42, 62, 0.64);
-  --glass-blur:      16px;
-  --glass-border:    1px solid rgba(255, 255, 255, 0.11);
+  /* ─────────────────────────────────────────────────
+     Background Layers — Dark Mode (Default)
+     ───────────────────────────────────────────────── */
+  --bg-color: #050d14;              /* Base background — deepest */
+  --bg-secondary: #091824;          /* Secondary bg — cards, sections */
+  --bg-tertiary: #0f2535;           /* Tertiary bg — elevated */
+  --bg-overlay: rgba(5, 13, 20, 0.8); /* Overlay for modals */
 
-  /* 5. Text colors */
-  --text-color:     #dff0fb;
-  --text-secondary: #8ab4cc;
-  --text-tertiary:  #5a86a0;
+  /* ─────────────────────────────────────────────────
+     Text Colors — Dark Mode
+     ───────────────────────────────────────────────── */
+  --text-color: #dff0fb;            /* Primary text — high contrast */
+  --text-secondary: #8ab4cc;        /* Secondary text — muted */
+  --text-tertiary: #5a86a0;         /* Tertiary text — subtle */
+  --text-inverse: #050d14;          /* Text on light backgrounds */
 
-  /* 6. Card & border */
-  --card-bg:      rgba(9, 28, 44, 0.54);
-  --border-color: rgba(80, 160, 200, 0.16);
+  /* ─────────────────────────────────────────────────
+     Glass Morphism — Frosted Glass Effect
+     ───────────────────────────────────────────────── */
+  --glass-color: rgba(9, 28, 44, 0.72);      /* Card glass bg */
+  --glass-color-alt: rgba(14, 42, 62, 0.64); /* Alt glass bg */
+  --glass-blur: 16px;                        /* Blur radius */
+  --glass-border: 1px solid rgba(255, 255, 255, 0.11); /* Border */
 
-  /* 7. Glow colors */
-  --glow-primary: rgba(14, 165, 233, 0.22);
-  --glow-success: rgba(16, 185, 129, 0.2);
-  --glow-danger:  rgba(239, 68, 68, 0.22);
-  --glow-plant:   rgba(34, 197, 94, 0.2);
-  --glow-teal:    rgba(20, 184, 166, 0.18);
+  /* ─────────────────────────────────────────────────
+     Card & Component Backgrounds
+     ───────────────────────────────────────────────── */
+  --card-bg: rgba(9, 28, 44, 0.54);   /* Card background */
+  --border-color: rgba(80, 160, 200, 0.16); /* Subtle border */
+  --sidebar-bg: rgba(5, 15, 24, 0.9); /* Sidebar background */
 
-  /* 8. Theme transition sweep defaults (used by App.jsx toggleTheme) */
-  --theme-sweep-from-x: -140%;
-  --theme-sweep-from-y: 0%;
-  --theme-sweep-to-x:    140%;
-  --theme-sweep-to-y:    0%;
-  --theme-sweep-angle:   90deg;
-  --theme-ease:   cubic-bezier(0.22, 1, 0.36, 1);
-  --theme-scale:  1;
-  --theme-blur:   0px;
-  --theme-drift-x: 0px;
-  --theme-drift-y: 0px;
+  /* ─────────────────────────────────────────────────
+     Glow & Shadow Effects — for depth
+     ───────────────────────────────────────────────── */
+  --glow-primary: rgba(14, 165, 233, 0.22);   /* Sky blue glow */
+  --glow-success: rgba(16, 185, 129, 0.2);    /* Green glow */
+  --glow-danger: rgba(239, 68, 68, 0.22);     /* Red glow */
+  --glow-plant: rgba(34, 197, 94, 0.2);       /* Plant green glow */
+  --glow-teal: rgba(20, 184, 166, 0.18);      /* Teal glow */
+  --glow-warning: rgba(245, 158, 11, 0.2);    /* Amber glow */
 
-  /* 9. Shared layout spacing */
-  --layout-horizontal-padding: 2rem;
+  /* ─────────────────────────────────────────────────
+     Hover & Interactive States
+     ───────────────────────────────────────────────── */
+  --hover-overlay: rgba(20, 184, 166, 0.08);  /* Hover bg */
+  --active-overlay: rgba(20, 184, 166, 0.16); /* Active bg */
+  --focus-ring: 0 0 0 3px rgba(14, 165, 233, 0.4); /* Focus outline */
+
+  /* ═══════════════════════════════════════════════════
+     TYPOGRAPHY
+     ═══════════════════════════════════════════════════ */
+  --font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --font-family-mono: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+
+  --font-size-xs: 0.75rem;   /* 12px */
+  --font-size-sm: 0.875rem;  /* 14px */
+  --font-size-base: 1rem;    /* 16px */
+  --font-size-lg: 1.125rem;  /* 18px */
+  --font-size-xl: 1.25rem;   /* 20px */
+  --font-size-2xl: 1.5rem;   /* 24px */
+  --font-size-3xl: 1.875rem; /* 30px */
+  --font-size-4xl: 2.25rem;  /* 36px */
+  --font-size-5xl: 3rem;     /* 48px */
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+
+  /* ═══════════════════════════════════════════════════
+     SPACING — Consistent scale (4px base unit)
+     ═══════════════════════════════════════════════════ */
+  --space-0: 0;
+  --space-1: 0.25rem;   /* 4px */
+  --space-2: 0.5rem;    /* 8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-6: 1.5rem;    /* 24px */
+  --space-8: 2rem;      /* 32px */
+  --space-12: 3rem;     /* 48px */
+  --space-16: 4rem;     /* 64px */
+
+  /* ─────────────────────────────────────────────────
+     Layout Gaps — for grid/flex layouts
+     ───────────────────────────────────────────────── */
+  --gap-xs: 0.5rem;     /* 8px */
+  --gap-sm: 1rem;       /* 16px */
+  --gap-md: 1.5rem;     /* 24px */
+  --gap-lg: 2rem;       /* 32px */
+  --gap-xl: 3rem;       /* 48px */
+
+  /* ─────────────────────────────────────────────────
+     Padding Standards
+     ───────────────────────────────────────────────── */
+  --padding-xs: 0.5rem;  /* 8px */
+  --padding-sm: 0.75rem; /* 12px */
+  --padding-md: 1rem;    /* 16px */
+  --padding-lg: 1.5rem;  /* 24px */
+  --padding-xl: 2rem;    /* 32px */
+
+  /* ═══════════════════════════════════════════════════
+     BORDER RADIUS — rounded corner scale
+     ═══════════════════════════════════════════════════ */
+  --radius-sm: 0.375rem;  /* 6px */
+  --radius-md: 0.5rem;    /* 8px */
+  --radius-lg: 0.75rem;   /* 12px */
+  --radius-xl: 1rem;      /* 16px */
+  --radius-full: 9999px;  /* Pill-shaped */
+
+  /* ═══════════════════════════════════════════════════
+     SHADOWS — Depth layers
+     ═══════════════════════════════════════════════════ */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.04);
+  --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+
+  /* ═══════════════════════════════════════════════════
+     TRANSITIONS & ANIMATIONS
+     ═══════════════════════════════════════════════════ */
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 350ms;
+  --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* ═══════════════════════════════════════════════════
+     LAYOUT — Fixed dimensions
+     ═══════════════════════════════════════════════════ */
+  --sidebar-width: 260px;          /* Fixed sidebar width */
+  --topbar-height: 60px;           /* Topbar height */
+  --container-max-width: 1400px;   /* Content max-width */
+  --container-padding: 2rem;       /* Default container padding */
+
+  /* ─────────────────────────────────────────────────
+     Breakpoints — responsive design
+     ───────────────────────────────────────────────── */
+  /* Note: Use in media queries as:
+     @media (max-width: 640px) { ... }
+  */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
 }
 
-/* ─────────────────────────────────────────
-   10. LIGHT MODE
-   ───────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════
+   LIGHT MODE OVERRIDES
+   ═══════════════════════════════════════════════════ */
 [data-theme="light"] {
-  --primary-color: #0ea5e9;
-  --danger-color:  #ef4444;
-  --success-color: #10b981;
-  --warning-color: #f59e0b;
+  /* Light mode background layers */
+  --bg-color: #f0f8ff;              /* Light blue-tinted white */
+  --bg-secondary: #e8f5ec;          /* Light mint */
+  --bg-tertiary: #d6eee0;           /* Mint accent */
+  --bg-overlay: rgba(240, 248, 255, 0.8);
 
-  --bg-color:      #f0f8ff;
-  --bg-secondary:  #e8f5ec;
-  --bg-tertiary:   #d6eee0;
+  /* Light mode text colors */
+  --text-color: #0a1f2f;            /* Dark blue-gray */
+  --text-secondary: #2d5a70;        /* Medium blue-gray */
+  --text-tertiary: #4a7a90;         /* Light blue-gray */
+  --text-inverse: #f0f8ff;          /* Light text on dark */
 
-  --glass-color:     rgba(230, 248, 255, 0.72);
+  /* Light mode glass morphism */
+  --glass-color: rgba(230, 248, 255, 0.72);
   --glass-color-alt: rgba(210, 242, 235, 0.62);
-  --glass-blur:  16px;
   --glass-border: 1px solid rgba(6, 50, 80, 0.1);
 
-  --text-color:     #0a1f2f;
-  --text-secondary: #2d5a70;
-  --text-tertiary:  #4a7a90;
-
-  --card-bg:      rgba(255, 255, 255, 0.52);
+  /* Light mode components */
+  --card-bg: rgba(255, 255, 255, 0.52);
   --border-color: rgba(14, 100, 130, 0.12);
+  --sidebar-bg: rgba(240, 252, 248, 0.94);
 
+  /* Light mode glows */
   --glow-primary: rgba(14, 165, 233, 0.18);
   --glow-success: rgba(16, 185, 129, 0.16);
-  --glow-danger:  rgba(239, 68, 68, 0.18);
-  --glow-plant:   rgba(34, 197, 94, 0.16);
-  --glow-teal:    rgba(20, 184, 166, 0.14);
+  --glow-danger: rgba(239, 68, 68, 0.18);
+  --glow-plant: rgba(34, 197, 94, 0.16);
+  --glow-teal: rgba(20, 184, 166, 0.14);
+  --glow-warning: rgba(245, 158, 11, 0.16);
 
-  /* Sidebar tokens for light theme */
-  --sidebar-bg:          rgba(240, 252, 248, 0.94);
-  --sidebar-hover:       rgba(20, 184, 166, 0.08);
-  --sidebar-active:      rgba(20, 184, 166, 0.16);
-  --sidebar-active-text: var(--plant-teal);
-  --sidebar-border:      rgba(20, 184, 166, 0.18);
-}
-
-/* ─────────────────────────────────────────
-   11. DARK MODE SIDEBAR TOKENS
-   ───────────────────────────────────────── */
-[data-theme="dark"] {
-  --sidebar-bg:          rgba(5, 15, 24, 0.9);
-  --sidebar-hover:       rgba(20, 184, 166, 0.07);
-  --sidebar-active:      rgba(20, 184, 166, 0.18);
-  --sidebar-active-text: var(--plant-teal);
-  --sidebar-border:      rgba(20, 184, 166, 0.14);
+  /* Light mode primary color for contrast */
+  --primary-color: #0284c7;         /* Darker sky blue */
 }
