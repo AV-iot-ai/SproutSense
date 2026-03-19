@@ -338,40 +338,26 @@ Check: Edge Impulse model confidence threshold (default 70%)
 
 ## 📁 Repository Structure
 
-```
-SproutSense/
-├── esp32-upload/
-│   ├── ESP32-SENSOR/
-│   │   └── ESP32-SENSOR.ino        ← ✅ Flow sensor + Relay implemented
-│   └── ESP32_CAM_AI/
-│       └── ESP32_CAM_AI.ino        ← AI disease detection firmware
-│
-├── backend/
-│   └── src/
-│       ├── server.js
-│       ├── config/db.js             ← MongoDB connection
-│       ├── models/                  ← Mongoose schemas
-│       ├── controllers/             ← Business logic
-│       └── routes/                  ← API endpoints
-│
-├── web/
-│   └── src/
-│       ├── App.jsx
-│       ├── api.js
-│       ├── components/
-│       └── pages/
-│           ├── HomePage.jsx
-│           ├── RecordsPage.jsx      ← Reads from MongoDB
-│           ├── AlertsPage.jsx
-│           ├── InsightsPage.jsx
-│           └── AIChat.jsx
-│
-├── docs/
-│   └── WIRING_GUIDE.md
-│
-├── AI_PROJECT_CONTEXT.txt           ← Full technical documentation
-└── PRESENTATION_10MIN_GUIDE.txt
-```
+## 🧱 System Architecture (Detailed)
+
+SproutSense is a dual‑ESP32 + MERN system split into **edge devices**, a **Node.js API backend**, a **React/Vite dashboard**, and **MongoDB Atlas** for storage.
+
+### High‑Level Flow
+
+```text
+  [ESP32-SENSOR-001] ── HTTP/JSON ──►  /api/sensors, /api/water, /api/config
+       ▲                                      │
+       │ ADC1 sensors, relay, flow            │
+       │                                      ▼
+  [ESP32-CAM-001] ── HTTP/JSON ──►       Node.js / Express
+       ▲                                 (Render.com)
+       │ Image + AI result                    │
+       │                                      ▼
+       └────────────── WebSocket ◄──── React / Vite Dashboard
+                             ▲           (Netlify)
+                             │
+                      MongoDB Atlas (DB: sproutsense)
+
 
 ---
 
@@ -415,3 +401,4 @@ SproutSense/
 
 **Happy Smart Gardening! 🌱💧🤖**  
 *NIT Rourkela — MINOR PROJECT*
+
