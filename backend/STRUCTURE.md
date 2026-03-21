@@ -2,6 +2,26 @@
 
 Complete MERN stack backend with MongoDB, Express, rate limiting, validation, and WebSocket support.
 
+### Sensor Endpoints
+
+- `GET /api/sensors` — latest reading (`?deviceId=` optional)
+- `GET /api/sensors/history` — history (`?deviceId=&start=&end=` or `?hours=24`)
+
+### Watering Endpoints
+
+- `POST /api/water/start`
+- `POST /api/water/stop`
+- `GET /api/water/status/:deviceId`
+- `GET /api/water/history`
+- `GET /api/water/today`
+
+### Config & Health
+
+- `GET /api/config` — system config (`?deviceId=`)
+- `GET /api/config/status` — all devices or `?deviceId=`
+- `GET /api/config/health` — backend + DB health (used by Render health check)
+
+
 ## Directory Structure
 
 ```

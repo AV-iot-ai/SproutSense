@@ -22,7 +22,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { useWebSocket } from './hooks/useWebSocket';
-import { configAPI, sensorAPI, wateringAPI, aiAPI } from './utils/api';
+
+import { configAPI, sensorAPI, wateringAPI, aiAPI } from './utils/api'; // <-- this one
+
 
 // ── Shared components ──────────────────────────────────────────────────────
 import { Navbar }          from './components/layout/Navbar';    // Ensure this path is correct!

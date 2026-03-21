@@ -8,6 +8,18 @@
 > Production IoT platform for automated plant care using dual ESP32 + MERN stack.
 
 ---
+## Production URLs
+
+- Backend (Render): https://sproutsense-backend.onrender.com/api
+- Frontend (Netlify): https://sproutsenseiot.netlify.app
+
+## Frontend environment (Netlify)
+
+Set these in Netlify → Site Settings → Environment Variables:
+
+- `VITE_API_BASE_URL=https://sproutsense-backend.onrender.com/api`
+- `VITE_WS_URL=wss://sproutsense-backend.onrender.com/ws`
+
 
 ## 🚨 CRITICAL: MongoDB Database Fix
 
