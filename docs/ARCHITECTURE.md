@@ -40,7 +40,7 @@ ESP32-CAM -> /api/ai/* -> MongoDB -> Web Dashboard
 
 ## Key Firmware Files
 
-- esp32-upload/ESP32 - Controller/SproutSense_ESP32-001.ino
+- esp32-upload/ESP32 - Controller/SproutSense_ESP32-SENSOR.ino
 - esp32-upload/ESP32_CAM_AI/ESP32_CAM_AI.ino
 
 ## Key Docs

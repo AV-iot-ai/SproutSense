@@ -6,9 +6,9 @@ import './styles/Sidebar.css';
 // Converts a status string to a human-readable label
 function statusLabel(status) {
   switch (status) {
-    case 'online':   return 'Online';
-    case 'offline':  return 'Offline';
-    default:         return 'Checking';
+    case 'online': return 'Online';
+    case 'offline': return 'Offline';
+    default: return 'Checking';
   }
 }
 
@@ -21,7 +21,7 @@ export function Sidebar({
 }) {
   return (
     <aside className="sidebar" role="navigation" aria-label="Main navigation">
-      
+
       {/* ── Brand logo (Hides when collapsed via CSS) ── */}
       <div className="sidebar-brand">
         <GlassIcon name="sprout" className="sidebar-brand-icon" />
@@ -64,11 +64,10 @@ export function Sidebar({
                   {/* Device (ESP32 + CAM) online/offline dot */}
                   {item.path === '/esp32' && (
                     <span
-                      className={`sidebar-status-dot ${
-                        systemStatus.esp32Cam === 'online' || systemStatus.esp32 === 'online'
+                      className={`sidebar-status-dot ${systemStatus.esp32Cam === 'online' || systemStatus.esp32 === 'online'
                           ? 'online'
                           : 'offline'
-                      }`}
+                        }`}
                       title={`ESP32: ${statusLabel(systemStatus.esp32)} | CAM: ${statusLabel(systemStatus.esp32Cam)}`}
                     />
                   )}
@@ -90,7 +89,7 @@ export function Sidebar({
           </span>
         </div>
         <div className="sidebar-system-row">
-          <span className="sidebar-system-label">ESP32</span>
+          <span className="sidebar-system-label">ESP32-SENSOR</span>
           <span className={`sidebar-system-pill ${systemStatus.esp32}`}>
             {statusLabel(systemStatus.esp32)}
           </span>

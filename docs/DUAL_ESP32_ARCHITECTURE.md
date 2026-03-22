@@ -12,7 +12,7 @@ Purpose:
 - Push data to backend
 
 Main firmware:
-- esp32-upload/ESP32 - Controller/SproutSense_ESP32-001.ino
+- esp32-upload/ESP32 - Controller/SproutSense_ESP32-SENSOR.ino
 
 ## ESP32 #2: ESP32-CAM AI
 
