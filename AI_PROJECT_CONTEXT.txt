@@ -8,8 +8,8 @@ Core Idea:
 
 Hard Invariants:
 - Always keep two physical devices:
-  - ESP32-SENSOR-001: sensors + pump + flow + TFT.
-  - ESP32-CAM-001: camera + disease detection.
+  - ESP32-SENSOR: sensors + pump + flow + TFT.
+  - ESP32-CAM: camera + disease detection.
 - Use ADC1 pins (GPIO 32–39) only for analog sensors. Never move sensors to ADC2 because Wi-Fi becomes unstable.
 - Pump and valve power must come from an external PSU. The ESP32 pin only drives the relay input.
 - Any new fields stored must be added to MongoDB schemas first, not “just used” in firmware or UI.
@@ -18,13 +18,13 @@ Hard Invariants:
 
 High-Level Architecture:
 - Edge:
-  - ESP32-SENSOR-001:
+  - ESP32-SENSOR:
     - Reads soil moisture, pH, temperature, humidity, light (ADC1).
     - YF-S401 flow sensor with interrupt counts, converts to mL.
     - Relay pump control with target volume + max runtime safety.
     - ST7735R TFT pages: soil/env, climate, watering, network.
     - HTTP POST to backend: /api/sensors, /api/water/start, /api/water/stop, /api/config/status.
-  - ESP32-CAM-001:
+  - ESP32-CAM:
     - Captures leaf images.
     - Runs Edge Impulse TF Lite Micro model (9 classes: healthy, leaf_spot, rust, blight, etc.).
     - Sends JSON with deviceId, label, confidence, timestamp (+ optional image reference) to /api/ai/disease.

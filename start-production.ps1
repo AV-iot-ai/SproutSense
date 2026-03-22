@@ -44,7 +44,7 @@ Write-Host ""
 Write-Host "Backend Started!" -ForegroundColor Green
 Write-Host "Frontend Started!" -ForegroundColor Green
 Write-Host ""
-Write-Host "Backend API: http://localhost:5000/api" -ForegroundColor Cyan
+Write-Host "Backend API: https://sproutsense-backend.onrender.com/api" -ForegroundColor Cyan
 Write-Host "Frontend URL: http://localhost:3000" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Note: In production, the frontend should be:" -ForegroundColor Yellow
