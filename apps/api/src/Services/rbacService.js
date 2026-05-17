@@ -1,12 +1,18 @@
 import Role from '../models/Role.js';
 import Permission from '../models/Permission.js';
 import RolePermission from '../models/RolePermission.js';
+import { PERMISSIONS, ROLE_KEYS } from '../config/rbac.js';
 
 export async function getRoleByKey(roleKey) {
   return Role.findOne({ key: String(roleKey || '').toLowerCase() });
 }
 
 export async function getPermissionKeysForRoleId(roleId) {
+  const role = await Role.findById(roleId).select('key').lean();
+  if (role?.key === ROLE_KEYS.ADMIN) {
+    return Object.values(PERMISSIONS);
+  }
+
   const mappings = await RolePermission.find({ roleId }).select('permissionId').lean();
   if (!mappings.length) return [];
 
