@@ -77,20 +77,6 @@ export default function OverviewSection({ systemStats, systemInfo }) {
 					</div>
 				</div>
 			</div>
-
-			{/* Philosophical Scroll Reveal */}
-			<section className="adm-quote-reveal" style={{ marginTop: '4rem', padding: '2rem 0' }}>
-				<ScrollReveal
-					baseOpacity={0.1}
-					enableBlur
-					baseRotation={0}
-					blurStrength={10}
-				>
-					When does a man die? When he is hit by a bullet? No! When he suffers a disease?
-					No! When he ate a soup made out of a poisonous mushroom?
-					No! A man dies when he is forgotten!
-				</ScrollReveal>
-			</section>
 		</div>
 	);
 }
