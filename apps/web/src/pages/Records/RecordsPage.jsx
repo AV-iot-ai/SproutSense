@@ -2,6 +2,7 @@
 import api from '../api'; // Use the newly fixed global API client
 import { formatDiseaseName } from '../utils/formatters'; // Ensure this path is correct
 import { GlassIcon } from '../components/GlassIcon'; // Ensure this path is correct
+import { useWebSocket } from '../hooks/useWebSocket';
 import {
   AreaChart,
   Area,
@@ -103,11 +104,25 @@ export default function RecordsPage() {
   const [activeMetric, setActiveMetric] = useState('soilMoisture');
   const [diseaseDetections, setDiseaseDetections] = useState([]);
   
+  // Real-time vs Historical State
+  const [isRealTime, setIsRealTime] = useState(false);
+  const [comprehensiveMode, setComprehensiveMode] = useState(false);
+  
   // Pagination State
   const [page, setPage] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
-  const PAGE_SIZE = 20;
+  const PAGE_SIZE = comprehensiveMode ? 1000 : 20;
+
+  // Real-time WebSocket handler
+  const handleWebSocketMessage = useCallback((data) => {
+    if (data?.sensorData) {
+      setRecords(prev => [data.sensorData, ...prev.slice(0, 999)]);
+      setIsRealTime(true);
+    }
+  }, []);
+
+  const { isConnected } = useWebSocket(handleWebSocketMessage);
 
   const fetchRecords = useCallback(async () => {
     setLoading(true);
@@ -127,6 +142,13 @@ export default function RecordsPage() {
       // Handle the exact structure from the backend: { success: true, data: [...], pagination: {...} }
       const sensorData = sensorResp.data || [];
       setRecords(sensorData);
+      
+      // If real-time is available, mark as real-time; otherwise fallback to historical
+      if (isConnected) {
+        setIsRealTime(true);
+      } else {
+        setIsRealTime(false);
+      }
       
       // Backend should ideally return total records in pagination object
       if (sensorResp.pagination) {
@@ -151,11 +173,12 @@ export default function RecordsPage() {
     } catch (e) {
       console.error("Failed to fetch records:", e);
       setError('Failed to load records. Ensure the backend is running.');
+      setIsRealTime(false); // Fallback to historical indicator
       setRecords([]);
     } finally {
       setLoading(false);
     }
-  }, [selectedRange, page]); // Re-fetch when range OR page changes
+  }, [selectedRange, page, PAGE_SIZE, isConnected]); // Re-fetch when range OR page changes
 
   useEffect(() => { 
     fetchRecords(); 
@@ -232,6 +255,23 @@ export default function RecordsPage() {
           </div>
         </div>
         <div className="records-header-right">
+          <div className="records-mode-indicator">
+            <span className={`records-status-badge${isRealTime ? ' real-time' : ' historical'}`}>
+              <i className={`fa-solid ${isRealTime ? 'fa-circle' : 'fa-history'}`} />
+              {isRealTime ? 'Real-Time' : 'Historical Data'}
+            </span>
+          </div>
+          <button 
+            className={`records-comprehensive-btn${comprehensiveMode ? ' active' : ''}`}
+            onClick={() => {
+              setComprehensiveMode(!comprehensiveMode);
+              setPage(1);
+            }}
+            title={comprehensiveMode ? 'Show paginated view' : 'Show all records'}
+          >
+            <i className={`fa-solid ${comprehensiveMode ? 'fa-table-list' : 'fa-list'}`} />
+            {comprehensiveMode ? 'Comprehensive' : 'Paginated'}
+          </button>
           <div className="records-range-tabs">
             {TIME_RANGES.map(r => (
               <button
@@ -397,8 +437,19 @@ export default function RecordsPage() {
       {/* Records table */}
       <div className="records-table-card">
         <div className="records-table-header">
-          <span>Recent Sensor Readings</span>
-          <span className="records-count">{totalRecords} records total</span>
+          <div className="records-table-title">
+            <span>{comprehensiveMode ? 'Comprehensive Data View' : 'Recent Sensor Readings'}</span>
+            <span className="records-count">{comprehensiveMode ? `All ${totalRecords} records` : `${totalRecords} records total`}</span>
+          </div>
+          <div className="records-table-meta">
+            <span className={`records-data-mode ${comprehensiveMode ? 'comprehensive' : 'paginated'}`}>
+              {comprehensiveMode ? 'Showing all available data' : `Showing page ${page} of ${totalPages}`}
+            </span>
+            <span className={`records-source-mode ${isRealTime ? 'real-time' : 'historical'}`}>
+              <i className={`fa-solid ${isRealTime ? 'fa-circle' : 'fa-database'}`} />
+              {isRealTime ? 'Real-Time Stream' : 'Historical Records'}
+            </span>
+          </div>
         </div>
 
         {loading && (
@@ -472,8 +523,8 @@ export default function RecordsPage() {
               </table>
             </div>
 
-            {/* True Backend Pagination */}
-            {totalPages > 1 && (
+            {/* Pagination - Only show in paginated mode */}
+            {!comprehensiveMode && totalPages > 1 && (
               <div className="records-pagination">
                 <button
                   className="records-page-btn"
@@ -492,6 +543,14 @@ export default function RecordsPage() {
                 >
                   Next
                 </button>
+              </div>
+            )}
+
+            {/* Comprehensive mode indicator */}
+            {comprehensiveMode && (
+              <div className="records-comprehensive-notice">
+                <i className="fa-solid fa-info-circle" />
+                <span>Showing all {totalRecords} records. {isRealTime ? 'Live updates enabled.' : 'Historical data loaded.'}</span>
               </div>
             )}
           </>

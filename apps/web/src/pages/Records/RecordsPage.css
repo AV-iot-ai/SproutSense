@@ -484,6 +484,149 @@
   color: var(--text-secondary);
 }
 
+/* Real-time vs Historical Indicator */
+.records-mode-indicator {
+  display: flex;
+  align-items: center;
+}
+
+.records-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  transition: all 0.3s ease;
+}
+
+.records-status-badge.real-time {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.3);
+  color: #22c55e;
+}
+
+.records-status-badge.real-time i {
+  animation: pulse-glow 1.5s ease-in-out infinite;
+}
+
+.records-status-badge.historical {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.3);
+  color: #6366f1;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+/* Comprehensive Toggle Button */
+.records-comprehensive-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.records-comprehensive-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: var(--text-color);
+}
+
+.records-comprehensive-btn.active {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.3);
+  color: #22c55e;
+}
+
+/* Enhanced Table Header */
+.records-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.records-table-title {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.records-table-meta {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  font-size: 0.85rem;
+}
+
+.records-data-mode {
+  padding: 0.3rem 0.8rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+}
+
+.records-data-mode.comprehensive {
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+}
+
+.records-source-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+}
+
+.records-source-mode.real-time {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+}
+
+.records-source-mode.historical {
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+}
+
+/* Comprehensive Notice */
+.records-comprehensive-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 1rem;
+  background: rgba(34, 197, 94, 0.05);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: 10px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-top: 1rem;
+}
+
+.records-comprehensive-notice i {
+  color: #22c55e;
+  font-size: 1.1rem;
+}
+
 @media (max-width: 600px) {
   /* File removed after migration to AnalyticsPage.css */
     padding: 1rem;
