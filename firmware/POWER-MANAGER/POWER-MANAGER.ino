@@ -1,98 +1,71 @@
 /******************************************************************************
- * SPROUTSENSE — POWER MANAGER v1.0
- * External Arduino for Power Distribution & Load Management
+ * SPROUTSENSE — POWER MANAGER v1.1 (SIMPLIFIED - Single 5V PSU)
+ * Arduino Uno for Pump Relay Control & ESP32 Protection
  *
- * Board: Arduino Nano/Uno with external 12V power supply
+ * Board: Arduino Uno R3
  * 
- * Purpose: 
- * - Manages power distribution to avoid brownouts
- * - Controls high-load devices (relay/pump) independently
- * - Monitors voltage levels
- * - Communicates with ESP32 via Serial/I2C
- * - Provides stable power to sensors
- *
+ * Purpose:
+ * - Controls pump relay (Connected to Arduino PIN 8)
+ * - Listens for "PUMP_START" command from ESP32 via Serial
+ * 
  * Connections:
- * - Arduino Serial RX (pin 0) ← ESP32 TX (GPIO 1)
- * - Arduino Serial TX (pin 1) → ESP32 RX (GPIO 3)
- * - Arduino GND ← ESP32 GND (common ground)
- * - Arduino GND ← External PSU GND (common ground)
+ * - Arduino GND (Pin GND)  <-> ESP32 GND (Shared Ground)
+ * - Arduino RX  (Pin 0)    <-> ESP32 TX (GPIO 17)
+ * - Arduino TX  (Pin 1)    <-> ESP32 RX (GPIO 16)
+ * - Arduino PIN 8          <-> Relay Signal (IN)
  * 
- * Power Distribution:
- * - 5V to sensors (through voltage regulator)
- * - 12V to relay (via GPIO relay driver)
- * - 5V to ESP32 USB backup
+ * Logic Flow: [ESP32] --(Serial JSON)--> [Arduino] --(Pin 8 High)--> [Relay]
  ******************************************************************************/
 
-#include <Wire.h>
-#include <SoftwareSerial.h>
 #include <ArduinoJson.h>
 
 /* ============================================================
-   PIN CONFIGURATION (Arduino Nano/Uno)
+   PIN CONFIGURATION
    ============================================================ */
 #define PIN_RELAY_PUMP      8    // HIGH to activate pump relay
-#define PIN_SENSOR_EN       9    // HIGH to enable sensor power (optional PWM)
-#define PIN_V_MONITOR       A0   // Voltage monitor input (12V PSU → voltage divider)
-#define PIN_5V_MONITOR      A1   // 5V bus monitor
-#define PIN_STATUS_LED      13   // Status indicator
+#define PIN_STATUS_LED      13   // Status indicator (built-in LED)
+#define PIN_V_MONITOR       A0   // Optional: 5V monitoring
 
 /* ============================================================
-   HARDWARE SERIAL (RX=0, TX=1)
-   Using HardwareSerial to communicate with ESP32
-   ============================================================ */
-// HardwareSerial is built-in on Serial (pins 0, 1)
-
-/* ============================================================
-   CONSTANTS & CONFIG
+   SERIAL SETTINGS (Hardware RX/TX on D0/D1)
    ============================================================ */
 #define BAUD_RATE            9600
-#define SAMPLE_COUNT         5
-#define V_NOMINAL_12V        12.0f
-#define V_MIN_SAFE           10.5f  // Minimum safe voltage
-#define V_5V_NOMINAL         5.0f
-#define V_5V_MIN_SAFE        4.7f   // Minimum safe 5V rail
-#define ADC_REF_VOLTAGE      5.0f
-#define ADC_MAX              1023
-#define PUMP_DELAY_MS        500    // Delay before activating pump to allow PSU stabilization
 #define PUMP_TIMEOUT_MS      25000  // Max pump runtime (safety cutoff)
-#define MONITOR_INTERVAL_MS  5000   // How often to report voltage
+#define PUMP_DELAY_MS        500    // Delay before relay activation
+#define MONITOR_INTERVAL_MS  5000   // Voltage check interval
 #define HEARTBEAT_INTERVAL   10000  // Status heartbeat to ESP32
 
 /* ============================================================
-   VOLTAGE DIVIDER CALIBRATION (12V rail)
-   Adjust these values based on your actual voltage divider
-   Example: 12V → 2.5V at ADC pin requires calibration
+   VOLTAGE MONITORING THRESHOLDS
    ============================================================ */
-#define V_DIVIDER_RATIO      4.8f   // (R1+R2)/R2, measure and calibrate
-#define ADC_OFFSET           0.0f   // Fine-tune if needed
+#define V_5V_NOMINAL         5.0f
+#define V_5V_MIN_SAFE        4.7f   // Minimum safe voltage
+#define ADC_REF_VOLTAGE      5.0f
+#define ADC_MAX              1023
+#define V_DIVIDER_RATIO      2.0f   // (R1+R2)/R2 for 5V divider
 
 /* ============================================================
    STATE VARIABLES
    ============================================================ */
-bool g_pumpEnabled = false;
 bool g_pumpRunning = false;
 unsigned long g_pumpStartMs = 0;
 unsigned long g_lastMonitorMs = 0;
 unsigned long g_lastHeartbeatMs = 0;
-float g_voltageMain = 12.0f;
 float g_voltage5V = 5.0f;
 bool g_lowVoltageAlert = false;
-bool g_sensorPowerOn = true;
 
 /* ============================================================
    SETUP
    ============================================================ */
 void setup() {
-  Serial.begin(BAUD_RATE);  // Hardware serial for ESP32 communication
+  Serial.begin(BAUD_RATE);  // Hardware serial for ESP32
   
   pinMode(PIN_RELAY_PUMP, OUTPUT);
-  pinMode(PIN_SENSOR_EN, OUTPUT);
   pinMode(PIN_STATUS_LED, OUTPUT);
   
   // Start with safe state
-  digitalWrite(PIN_RELAY_PUMP, LOW);  // Pump off
-  digitalWrite(PIN_SENSOR_EN, HIGH);  // Sensors enabled
-  digitalWrite(PIN_STATUS_LED, LOW);  // LED off
+  digitalWrite(PIN_RELAY_PUMP, LOW);   // Pump off
+  digitalWrite(PIN_STATUS_LED, LOW);   // LED off
   
   delay(1000);
   
@@ -111,10 +84,10 @@ void loop() {
     handleSerialCommand();
   }
   
-  // Monitor voltages periodically
+  // Monitor voltage periodically
   if (now - g_lastMonitorMs >= MONITOR_INTERVAL_MS) {
     g_lastMonitorMs = now;
-    monitorVoltages();
+    monitorVoltage();
     checkSafety();
   }
   
@@ -126,7 +99,7 @@ void loop() {
   
   // Check pump timeout safety
   if (g_pumpRunning && (now - g_pumpStartMs > PUMP_TIMEOUT_MS)) {
-    logError("PUMP_TIMEOUT", "Forced pump stop after %lu ms", now - g_pumpStartMs);
+    logError("PUMP_TIMEOUT", "Forced stop after %lu ms", now - g_pumpStartMs);
     stopPump();
     flashLED(5);  // 5 flashes = pump timeout error
   }
@@ -158,21 +131,19 @@ void handleSerialCommand() {
   
   // PUMP_START command
   if (strcmp(cmd, "PUMP_START") == 0) {
-    float targetMl = doc["ml"] | 100.0f;
-    logInfo("PUMP", "Start command received (target: %.0f ml)", targetMl);
+    float targetMl = doc["ml"] | 0.0f;
+    if (targetMl > 0) {
+      logInfo("PUMP", "Start command (target: %.0f ml)", targetMl);
+    } else {
+      logInfo("PUMP", "Start command");
+    }
     startPump();
   }
   
   // PUMP_STOP command
   else if (strcmp(cmd, "PUMP_STOP") == 0) {
-    logInfo("PUMP", "Stop command received");
+    logInfo("PUMP", "Stop command");
     stopPump();
-  }
-  
-  // SENSOR_POWER command (optional - for power saving)
-  else if (strcmp(cmd, "SENSOR_POWER") == 0) {
-    bool enable = doc["enable"] | true;
-    setSensorPower(enable);
   }
   
   // STATUS command - respond with current state
@@ -195,20 +166,20 @@ void startPump() {
   }
   
   if (g_lowVoltageAlert) {
-    logError("PUMP", "Cannot start - voltage too low");
-    sendStatusJson("PUMP_FAIL", "voltage_low", g_voltageMain);
+    logError("PUMP", "Cannot start - voltage too low (%.2fV)", g_voltage5V);
+    sendStatusJson("PUMP_FAIL", "voltage_low", g_voltage5V);
     flashLED(2);
     return;
   }
   
   logInfo("PUMP", "Enabling relay after %d ms delay", PUMP_DELAY_MS);
-  delay(PUMP_DELAY_MS);  // Allow PSU to stabilize
+  delay(PUMP_DELAY_MS);  // Allow PSU+capacitor to stabilize
   
   g_pumpRunning = true;
   g_pumpStartMs = millis();
   digitalWrite(PIN_RELAY_PUMP, HIGH);
-  
   digitalWrite(PIN_STATUS_LED, HIGH);  // LED on while pumping
+  
   logOK("PUMP", "Relay activated");
   sendStatusJson("PUMP_OK", "started", 0);
 }
@@ -228,38 +199,28 @@ void stopPump() {
 }
 
 /* ============================================================
-   SENSOR POWER CONTROL
-   ============================================================ */
-void setSensorPower(bool enable) {
-  g_sensorPowerOn = enable;
-  digitalWrite(PIN_SENSOR_EN, enable ? HIGH : LOW);
-  logInfo("SENSOR_PWR", enable ? "Enabled" : "Disabled");
-}
-
-/* ============================================================
    VOLTAGE MONITORING
    ============================================================ */
-void monitorVoltages() {
-  // Read 12V rail
-  int adcRaw12 = analogRead(PIN_V_MONITOR);
-  g_voltageMain = (adcRaw12 / (float)ADC_MAX) * ADC_REF_VOLTAGE * V_DIVIDER_RATIO + ADC_OFFSET;
-  
+void monitorVoltage() {
   // Read 5V rail
-  int adcRaw5 = analogRead(PIN_5V_MONITOR);
-  g_voltage5V = (adcRaw5 / (float)ADC_MAX) * ADC_REF_VOLTAGE;
+  int adcRaw = analogRead(PIN_V_MONITOR);
+  g_voltage5V = (adcRaw / (float)ADC_MAX) * ADC_REF_VOLTAGE * V_DIVIDER_RATIO;
   
-  Serial.printf("║ V_MAIN: %.2fV (raw: %d)  V_5V: %.2fV (raw: %d)\n", 
-                g_voltageMain, adcRaw12, g_voltage5V, adcRaw5);
+  Serial.print("║ V_5V: ");
+  Serial.print(g_voltage5V);
+  Serial.print("V (ADC raw: ");
+  Serial.print(adcRaw);
+  Serial.println(")");
 }
 
 void checkSafety() {
   bool prevAlert = g_lowVoltageAlert;
   
-  g_lowVoltageAlert = (g_voltageMain < V_MIN_SAFE || g_voltage5V < V_5V_MIN_SAFE);
+  // Check if voltage is critically low
+  g_lowVoltageAlert = (g_voltage5V < V_5V_MIN_SAFE);
   
   if (g_lowVoltageAlert && !prevAlert) {
-    logError("VOLTAGE", "LOW VOLTAGE ALERT! Main: %.2fV, 5V: %.2fV", 
-             g_voltageMain, g_voltage5V);
+    logError("VOLTAGE", "LOW VOLTAGE ALERT! Measured: %.2fV", g_voltage5V);
     if (g_pumpRunning) {
       logError("PUMP", "Force stopping due to low voltage");
       stopPump();
@@ -267,8 +228,7 @@ void checkSafety() {
     flashLED(4);  // 4 flashes = low voltage
   }
   else if (!g_lowVoltageAlert && prevAlert) {
-    logOK("VOLTAGE", "Voltage recovered. Main: %.2fV, 5V: %.2fV", 
-          g_voltageMain, g_voltage5V);
+    logOK("VOLTAGE", "Voltage recovered to %.2fV", g_voltage5V);
     flashLED(1);  // 1 flash = recovered
   }
 }
@@ -280,8 +240,6 @@ void sendStatus() {
   StaticJsonDocument<256> doc;
   doc["type"] = "STATUS";
   doc["pump_running"] = g_pumpRunning;
-  doc["sensor_power"] = g_sensorPowerOn;
-  doc["v_main"] = g_voltageMain;
   doc["v_5v"] = g_voltage5V;
   doc["low_voltage"] = g_lowVoltageAlert;
   
@@ -307,7 +265,6 @@ void sendHeartbeat() {
   StaticJsonDocument<256> doc;
   doc["type"] = "HEARTBEAT";
   doc["uptime"] = millis() / 1000;
-  doc["v_main"] = g_voltageMain;
   doc["v_5v"] = g_voltage5V;
   doc["pump_ok"] = !g_pumpRunning;
   
@@ -321,45 +278,57 @@ void sendHeartbeat() {
    ============================================================ */
 void logPowerup() {
   Serial.println(F("\n╔═══════════════════════════════════════════════════════════════"));
-  Serial.println(F("║ SproutSense POWER MANAGER v1.0 - Starting Up"));
-  Serial.println(F("║ Arduino Power Distribution & Load Management System"));
+  Serial.println(F("║ SproutSense POWER MANAGER v1.1 (Single 5V PSU) - Starting Up"));
+  Serial.println(F("║ Arduino Uno Relay Control & ESP32 Protection System"));
   Serial.println(F("╚═══════════════════════════════════════════════════════════════\n"));
 }
 
 void logInfo(const char* tag, const char* fmt, ...) {
-  char buf[256];
+  char buf[128];
   va_list args;
   va_start(args, fmt);
   vsnprintf(buf, sizeof(buf), fmt, args);
   va_end(args);
-  Serial.printf("║ [INFO  | %-10s] %s\n", tag, buf);
+  Serial.print("║ [INFO  | ");
+  Serial.print(tag);
+  Serial.print("] ");
+  Serial.println(buf);
 }
 
 void logOK(const char* tag, const char* fmt, ...) {
-  char buf[256];
+  char buf[128];
   va_list args;
   va_start(args, fmt);
   vsnprintf(buf, sizeof(buf), fmt, args);
   va_end(args);
-  Serial.printf("║ [OK    | %-10s] %s\n", tag, buf);
+  Serial.print("║ [OK    | ");
+  Serial.print(tag);
+  Serial.print("] ");
+  Serial.println(buf);
 }
 
 void logWarn(const char* tag, const char* fmt, ...) {
-  char buf[256];
+  char buf[128];
   va_list args;
   va_start(args, fmt);
   vsnprintf(buf, sizeof(buf), fmt, args);
   va_end(args);
-  Serial.printf("║ [WARN  | %-10s] %s\n", tag, buf);
+  Serial.print("║ [WARN  | ");
+  Serial.print(tag);
+  Serial.print("] ");
+  Serial.println(buf);
 }
 
 void logError(const char* tag, const char* fmt, ...) {
-  char buf[256];
+  char buf[128];
   va_list args;
   va_start(args, fmt);
   vsnprintf(buf, sizeof(buf), fmt, args);
   va_end(args);
-  Serial.printf("║ [ERROR | %-10s] %s\n", tag, buf);
+  Serial.print("║ [ERROR | ");
+  Serial.print(tag);
+  Serial.print("] ");
+  Serial.println(buf);
 }
 
 void flashLED(uint8_t times) {

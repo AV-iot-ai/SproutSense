@@ -458,60 +458,33 @@ void handleButton(unsigned long now) {
   if (reading == g_btnStable) return;
 
   g_btnStable = reading;
+  
+  // Logic for when the button is pressed (LOW because of INPUT_PULLUP)
   if (g_btnStable == LOW) {
-    // Serial print that button is pressed
-    logLine("BUTTON", "Button Pressed!");
-    Serial.println(">>> BUTTON_PRESSED_EVENT_DETECTED <<<");
+    Serial.println("\n>>> BUTTON_PRESSED_EVENT_DETECTED <<<");
+    logLine("BUTTON", "Button Pressed: Silencing Buzzer & Safety Stop Pump");
 
-    // Disable buzzer immediately when button is pressed
-    if (g_buzzerEnabled) {
-      g_buzzerEnabled = false;
-      logLine("BUTTON", "Buzzer DISABLED due to button press");
-      digitalWrite(PIN_BUZZER, LOW); // Ensure buzzer is physically off
+    // 1. SILENCE BUZZER IMMEDIATELY
+    g_buzzerEnabled = false;
+    digitalWrite(PIN_BUZZER, LOW); 
+    
+    // 2. SAFETY STOP PUMP
+    if (g_pumpRunning) {
+      logLine("BUTTON", "Terminating pump for safety...");
+      g_manualPump = false;
+      stopPump();
     }
 
-    // 1. Long press logic (2 seconds) to RESET WIFI
+    // 3. LONG PRESS FOR RESET (KEEP AS BEFORE)
     unsigned long pressStartTime = millis();
     while(digitalRead(PIN_BUTTON) == LOW) {
       if (millis() - pressStartTime > 2000) {
-        logLine("BUTTON", "RESET: Clearing WiFi and Restarting...");
-        // Re-enable buzzer temporarily for reset feedback if desired, or skip it
-        digitalWrite(PIN_BUZZER, HIGH); delay(100); digitalWrite(PIN_BUZZER, LOW); 
-        delay(50);
-        digitalWrite(PIN_BUZZER, HIGH); delay(100); digitalWrite(PIN_BUZZER, LOW); 
+        logLine("BUTTON", "HARD RESET: Clearing WiFi and Restarting...");
         preferences.begin("sproutsense", false);
         preferences.clear();
         delay(1000);
         ESP.restart();
       }
-    }
-
-    // Original Toggle Buzzer Logic (Modified to be specific)
-    /*
-    g_buzzerEnabled = !g_buzzerEnabled;
-    if (g_buzzerEnabled) {
-      // Short high beep for ON
-      digitalWrite(PIN_BUZZER, HIGH); delay(100); digitalWrite(PIN_BUZZER, LOW);
-      logLine("BUTTON", "Buzzer ENABLED");
-    } else {
-      // Low double beep for OFF
-      digitalWrite(PIN_BUZZER, HIGH); delay(50); digitalWrite(PIN_BUZZER, LOW);
-      delay(50);
-      digitalWrite(PIN_BUZZER, HIGH); delay(50); digitalWrite(PIN_BUZZER, LOW);
-      logLine("BUTTON", "Buzzer DISABLED");
-    }
-    */
-
-    // 2. Original Pump Logic (Keep or modify as needed)
-    if (g_pumpRunning) {
-      logLine("BUTTON", "Pressed: pump OFF");
-      g_manualPump = false;
-      stopPump();
-    } else {
-      // Optional: Start pump on button press? 
-      // If you only want the button for Buzzer, comment out the next 2 lines.
-      // g_manualPump = true;
-      // startPump("button");
     }
   }
 }

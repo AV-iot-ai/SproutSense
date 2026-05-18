@@ -20,11 +20,11 @@
 | **ESP32 DevKit** | USB (Logic) | - | GND |
 | **Arduino Uno** | USB/Ext (Power) | - | GND |
 | **Relay Module** | **Arduino 5V** | 5V / VCC | GND |
-| **Soil Moisture** | **Arduino 5V** | VCC | GND |
+| **Soil Moisture** | **ESP32 3.3V** | VCC | GND |
 | **Flow Meter** | **Arduino 5V** | VCC (Red) | GND (Black) |
 | **Buzzer** | **Arduino 5V** | (+) / VCC | (Signal) |
 | **DHT22** | **ESP32 3.3V** | VCC | GND |
-| **LDR Module** | **ESP32 3.3V** | VCC | GND |
+| **LDR Module** | **Digital (GPIO)** | VCC | GND |
 
 ---
 
@@ -35,9 +35,10 @@
 | :--- | :--- | :--- |
 | **GPIO 35** | Analog IN | Soil Moisture Signal (AO) |
 | **GPIO 32** | Analog IN | LDR Signal (AO) |
-| **GPIO 13** | Digital IN | DHT22 Data Pin |
+| **GPIO 15** | Digital IN | DHT22 Data Pin |
 | **GPIO 26** | Interrupt | Flow Meter Signal (Yellow) |
 | **GPIO 27** | Output | Buzzer Control |
+| **GPIO 14** | Output | Relay Control (if direct) |
 | **GPIO 33** | Input | **Push Button**:<br>1. One side to GPIO 33<br>2. Other side to ESP32 GND |
 | **GPIO 16** | RX2 | Arduino Uno TX |
 | **GPIO 17** | TX2 | Arduino Uno RX |
@@ -68,7 +69,11 @@
 *   **HTTP/Network Failure**: 1 Long beep (Signals data could not reach server).
 
 ### Button Behavior (Silence Control)
-*   **Single Press**: Toggles the Buzzer ON or OFF.
+*   **Single Press**: 
+    1.  Immediately silences current buzzer alert.
+    2.  Disables all future buzzer beeps.
+    3.  Sends a serial log: `>>> BUTTON_PRESSED_EVENT_DETECTED <<<`.
+*   **Long Press (2s)**: Resets Wi-Fi credentials and restarts the device.
 *   **Confirmation**:
     *   **Buzzer ON**: 1 Short high beep.
     *   **Buzzer OFF**: 2 Very short low beeps.
