@@ -150,8 +150,8 @@ const IntelligenceHub = ({ sensors, sensorDeviceId }) => {
         aiAPI.getInsights({ days, deviceId: sensorDeviceId }),
         axios.get('/api/intelligence/analysis', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
       ]);
-      setInsights(insRes.data);
-      setPyTrends(pyRes.data.data);
+      setInsights(insRes?.data || insRes);
+      setPyTrends(pyRes?.data?.data || pyRes?.data || pyRes);
     } catch (err) {
       console.error("Hub data fetch failed", err);
     } finally {

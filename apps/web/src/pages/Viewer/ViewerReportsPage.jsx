@@ -7,7 +7,7 @@ export default function ViewerReportsPage() {
   useEffect(() => {
     publicAPI
       .getReportsPreview()
-      .then((res) => setRows(res?.data?.weeklyWatering || []))
+      .then((res) => setRows(res?.weeklyWatering || res?.data?.weeklyWatering || []))
       .catch(() => setRows([]));
   }, []);
 

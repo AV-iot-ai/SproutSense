@@ -387,7 +387,7 @@ export const configAPI = {
       retentionDays,
       deviceId
     });
-    return response.data?.data || response.data;
+    return response;
   },
 
   clearWateringHistory: async (deviceId = 'ESP32-SENSOR', retentionDays = 365) => {
@@ -396,7 +396,7 @@ export const configAPI = {
       retentionDays,
       deviceId
     });
-    return response.data?.data || response.data;
+    return response;
   },
 
   clearDiseaseHistory: async (deviceId = 'ESP32-SENSOR', retentionDays = 180) => {
@@ -405,13 +405,13 @@ export const configAPI = {
       retentionDays,
       deviceId
     });
-    return response.data?.data || response.data;
+    return response;
   },
 
   clearAllHistory: async (deviceId = 'ESP32-SENSOR') => {
     if (isMockEnabled()) return { success: true, message: 'Mock history cleared' };
     const response = await api.post('/config/clear-all-history', { deviceId });
-    return response.data?.data || response.data;
+    return response;
   },
 
   getDataRetentionPolicy: async (deviceId = 'ESP32-SENSOR') => {
@@ -422,7 +422,7 @@ export const configAPI = {
     const response = await api.get('/config/data-retention', {
       params: { deviceId }
     });
-    return response.data;
+    return response;
   },
 
   updateDataRetentionPolicy: async (deviceId = 'ESP32-SENSOR', policy) => {
@@ -433,7 +433,7 @@ export const configAPI = {
     const response = await api.put('/config/data-retention', policy, {
       params: { deviceId }
     });
-    return response.data;
+    return response;
   },
 
   getAdminLogs: async (limit = 100) => {
@@ -444,7 +444,7 @@ export const configAPI = {
     const response = await api.get('/config/admin-logs', {
       params: { limit }
     });
-    return response.data;
+    return response;
   },
 
   deleteAdminLogs: async (options = {}) => {
@@ -454,7 +454,7 @@ export const configAPI = {
     }
 
     const response = await api.delete('/config/admin-logs', options);
-    return response.data;
+    return response;
   },
 
   createAdminLog: async ({ actor = 'admin', action, level = 'info', section = 'admin-panel', details = null } = {}) => {
@@ -469,7 +469,7 @@ export const configAPI = {
       section,
       details
     });
-    return response.data;
+    return response;
   },
 
   exportAdminLogs: async ({ format = 'json', limit = 500, q = '', level = 'all' } = {}) => {
@@ -486,7 +486,7 @@ export const configAPI = {
       responseType: 'blob'
     });
 
-    return response.data;
+    return response;
   }
 };
 
@@ -496,62 +496,62 @@ export const configAPI = {
 export const authAPI = {
   register: async ({ fullName, email, password, confirmPassword }, options = {}) => {
     const response = await api.post('/auth/register', { fullName, email, password, confirmPassword }, options);
-    return response.data;
+    return response;
   },
 
   login: async ({ email, password }, options = {}) => {
     const response = await api.post('/auth/login', { email, password }, options);
-    return response.data;
+    return response;
   },
 
   refresh: async ({ refreshToken }, options = {}) => {
     const response = await api.post('/auth/refresh', { refreshToken }, options);
-    return response.data;
+    return response;
   },
 
   logout: async ({ refreshToken }, options = {}) => {
     const response = await api.post('/auth/logout', { refreshToken }, options);
-    return response.data;
+    return response;
   },
 
   me: async (options = {}) => {
     const response = await api.get('/auth/me', options);
-    return response.data;
+    return response;
   },
 
   impersonate: async ({ userId }, options = {}) => {
     const response = await api.post('/auth/impersonate', { userId }, options);
-    return response.data;
+    return response;
   },
 
   updateProfile: async ({ preferredPlant }, options = {}) => {
     const response = await api.patch('/auth/me', { preferredPlant }, options);
-    return response.data;
+    return response;
   },
 
   verifyEmail: async ({ token }, options = {}) => {
     const response = await api.post('/auth/verify-email', { token }, options);
-    return response.data;
+    return response;
   },
 
   resendVerification: async ({ email }, options = {}) => {
     const response = await api.post('/auth/resend-verification', { email }, options);
-    return response.data;
+    return response;
   },
 
   forgotPassword: async ({ email }, options = {}) => {
     const response = await api.post('/auth/forgot-password', { email }, options);
-    return response.data;
+    return response;
   },
 
   resetPassword: async ({ token, password, confirmPassword }, options = {}) => {
     const response = await api.post('/auth/reset-password', { token, password, confirmPassword }, options);
-    return response.data;
+    return response;
   },
 
   passwordStrength: async ({ password, fullName, email }, options = {}) => {
     const response = await api.post('/auth/password-strength', { password, fullName, email }, options);
-    return response.data;
+    return response;
   },
 };
 
@@ -561,7 +561,7 @@ export const usersAPI = {
       params: { limit },
       ...options,
     });
-    return response.data;
+    return response;
   },
 
   create: async ({ fullName, email, password, roleKey, accountStatus, emailVerified }, options = {}) => {
@@ -573,42 +573,42 @@ export const usersAPI = {
       accountStatus,
       emailVerified,
     }, options);
-    return response.data;
+    return response;
   },
 
   updateRole: async (userId, roleKey, options = {}) => {
     const response = await api.patch(`/users/${userId}/role`, { roleKey }, options);
-    return response.data;
+    return response;
   },
 
   updateAccountStatus: async (userId, accountStatus, options = {}) => {
     const response = await api.patch(`/users/${userId}/account-status`, { accountStatus }, options);
-    return response.data;
+    return response;
   },
 
   updateSensorVisibility: async (userId, sensorDataVisible, options = {}) => {
     const response = await api.patch(`/users/${userId}/sensor-visibility`, { sensorDataVisible }, options);
-    return response.data;
+    return response;
   },
 
   delete: async (userId, options = {}) => {
     const response = await api.delete(`/users/${userId}`, options);
-    return response.data;
+    return response;
   },
 
   bulkAction: async (userIds, action, value, options = {}) => {
     const response = await api.post('/users/bulk-action', { userIds, action, value }, options);
-    return response.data;
+    return response;
   },
   
   updatePreferences: async (userId, uiPreferences, options = {}) => {
     const response = await api.patch(`/users/${userId}/preferences`, { uiPreferences }, options);
-    return response.data;
+    return response;
   },
 
   bulkUpdatePreferences: async ({ userIds, uiPreferences, targetAll = false }, options = {}) => {
     const response = await api.post('/users/bulk-preferences', { userIds, uiPreferences, targetAll }, options);
-    return response.data;
+    return response;
   },
 };
 
@@ -624,65 +624,65 @@ export const deviceAPI = {
       displayName,
       firmwareVersion,
     }, options);
-    return response.data;
+    return response;
   },
 
   listMine: async (options = {}) => {
     const response = await api.get('/device/mine', options);
-    return response.data;
+    return response;
   },
 
   rotateToken: async (deviceId, options = {}) => {
     const response = await api.post(`/device/${encodeURIComponent(deviceId)}/rotate-token`, {}, options);
-    return response.data;
+    return response;
   },
 
   unpair: async (deviceId, options = {}) => {
     const response = await api.delete(`/device/${encodeURIComponent(deviceId)}`, options);
-    return response.data;
+    return response;
   },
 
   // Device key management (admin)
   createKey: async ({ deviceId, pairingKey, provisioningSeed, displayName }, options = {}) => {
     const response = await api.post('/device/keys/create', { deviceId, pairingKey, provisioningSeed, displayName }, options);
-    return response.data;
+    return response;
   },
 
   listKeys: async (options = {}) => {
     const response = await api.get('/device/keys/list', options);
-    return response.data;
+    return response;
   },
 
   deleteKey: async (deviceId, options = {}) => {
     const response = await api.delete(`/device/keys/${encodeURIComponent(deviceId)}`, options);
-    return response.data;
+    return response;
   },
 
   toggleKeyStatus: async (deviceId, options = {}) => {
     const response = await api.patch(`/device/keys/${encodeURIComponent(deviceId)}/toggle`, {}, options);
-    return response.data;
+    return response;
   },
 
   batchDeleteKeys: async (deviceIds, options = {}) => {
     const response = await api.delete('/device/keys/batch', { data: { deviceIds }, ...options });
-    return response.data;
+    return response;
   },
 
   forcePair: async ({ deviceId, userId, displayName }, options = {}) => {
     const response = await api.post('/device/force-pair', { deviceId, userId, displayName }, options);
-    return response.data;
+    return response;
   },
 
   adminUnpair: async (deviceId, options = {}) => {
     const response = await api.delete(`/device/force-unpair/${encodeURIComponent(deviceId)}`, options);
-    return response.data;
+    return response;
   },
 };
 
 export const publicAPI = {
   getOverview: async (options = {}) => {
     const response = await api.get('/public/overview', options);
-    return response.data;
+    return response;
   },
 
   getAnalyticsPreview: async (hours = 24, options = {}) => {
@@ -690,12 +690,12 @@ export const publicAPI = {
       params: { hours },
       ...options,
     });
-    return response.data;
+    return response;
   },
 
   getReportsPreview: async (options = {}) => {
     const response = await api.get('/public/reports-preview', options);
-    return response.data;
+    return response;
   },
 };
 
@@ -763,7 +763,7 @@ export const aiAPI = {
     }
 
     const response = await api.get('/ai/usage/all', options);
-    return response.data;
+    return response;
   },
 
   // POST /api/ai/chat
@@ -779,7 +779,7 @@ export const aiAPI = {
       sensorContext,
       history,
     }, options);
-    return response.data;
+    return response;
   },
 
   // GET /api/ai/disease/all?deviceId=&page=&limit=&startDate=&endDate=
@@ -854,25 +854,25 @@ export const aiAPI = {
   // GET /api/ai/keys
   getAdminKeys: async (options = {}) => {
     const response = await api.get('/ai/keys', options);
-    return response.data;
+    return response;
   },
 
   // POST /api/ai/keys
   addAdminKey: async ({ label, key }, options = {}) => {
     const response = await api.post('/ai/keys', { label, key }, options);
-    return response.data;
+    return response;
   },
 
   // DELETE /api/ai/keys/:index
   deleteAdminKey: async (index, options = {}) => {
     const response = await api.delete(`/ai/keys/${index}`, options);
-    return response.data;
+    return response;
   },
 
   // PATCH /api/ai/keys/:index/toggle
   toggleAdminKey: async (index, options = {}) => {
     const response = await api.patch(`/ai/keys/${index}/toggle`, {}, options);
-    return response.data;
+    return response;
   },
 };
 

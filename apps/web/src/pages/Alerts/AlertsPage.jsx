@@ -193,7 +193,7 @@ export default function AlertsPage({ alerts = [], sensors, onClearAlert, onClear
         endDate  : end.toISOString(),
         limit    : 100,
       });
-      const detections = resp?.data?.detections || [];
+      const detections = resp?.detections || resp?.data?.detections || [];
 
       if (detections.length === 0) {
         setIsTestMode(false);

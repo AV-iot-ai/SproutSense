@@ -419,8 +419,8 @@ export default function AnalyticsPage() {
       ]);
 
       let sensors   = Array.isArray(sensorResp?.data) ? sensorResp.data : (sensorResp || []);
-      const diseases  = diseaseResp?.data?.detections || [];
-      let waterLogs = wateringResp?.data || [];
+      const diseases  = diseaseResp?.detections || diseaseResp?.data?.detections || [];
+      let waterLogs = Array.isArray(wateringResp?.data) ? wateringResp.data : (wateringResp || []);
 
       const parsed = sensors.map(s => ({
         ...s,

@@ -473,9 +473,9 @@ export function PublicDemoPage() {
   const [reportRows, setReportRows] = useState([]);
 
   useEffect(() => {
-    publicAPI.getOverview().then((res) => setOverview(res?.data || null)).catch(() => setOverview(null));
-    publicAPI.getAnalyticsPreview(24).then((res) => setAnalytics(res?.data?.summary || null)).catch(() => setAnalytics(null));
-    publicAPI.getReportsPreview().then((res) => setReportRows(res?.data?.weeklyWatering || [])).catch(() => setReportRows([]));
+    publicAPI.getOverview().then((res) => setOverview(res || res?.data || null)).catch(() => setOverview(null));
+    publicAPI.getAnalyticsPreview(24).then((res) => setAnalytics(res?.summary || res?.data?.summary || null)).catch(() => setAnalytics(null));
+    publicAPI.getReportsPreview().then((res) => setReportRows(res?.weeklyWatering || res?.data?.weeklyWatering || [])).catch(() => setReportRows([]));
   }, []);
 
   const previewRows = useMemo(() => reportRows.slice(-5), [reportRows]);
