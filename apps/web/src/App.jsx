@@ -302,6 +302,8 @@ function App() {
   const authPages = ['/login', '/register', '/forgot-password', '/reset-password', '/verify-email', '/verify-email-pending', '/access-denied'];
   const isAuthPage = authPages.some((path) => location.pathname === path);
   const isPublicPage = publicRoutes.includes(location.pathname);
+  const isGuestPublic = !auth.isAuthenticated && isPublicPage;
+
   useEffect(() => {
     if (sensorDeviceId && sensorDeviceId !== 'ESP32-SENSOR') {
       localStorage.setItem('selectedDeviceId', sensorDeviceId);
