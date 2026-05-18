@@ -28,17 +28,28 @@ const api = axios.create({
   }
 });
 
-api.interceptors.request.use((requestConfig) => {
-  const token = localStorage.getItem('ss_access_token');
-  if (token) {
-    requestConfig.headers.Authorization = `Bearer ${token}`;
-  }
-  return requestConfig;
-});
-
 // Automatic retry for 429 responses (exponential backoff + jitter)
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const MAX_RETRIES = parseInt(import.meta.env.VITE_API_RETRY_MAX || '4', 10);
+
+// Global response interceptor for error handling and cleaning
+api.interceptors.response.use(
+  (response) => {
+    // Return direct data if successful
+    return response.data?.status || response.data?.data || response.data || response;
+  },
+  (error) => {
+    const { response } = error;
+    
+    // Graceful handling for 404 on sensors - return empty array/null instead of crashing
+    if (response?.status === 404 && response?.config?.url?.includes('/sensors')) {
+      console.warn('[API] Resource not found, returning empty state');
+      return { readings: [], history: [], data: null };
+    }
+
+    return Promise.reject(error);
+  }
+);
 
 api.interceptors.response.use(null, async (error) => {
   const { config, response } = error || {};
@@ -218,7 +229,7 @@ export const sensorAPI = {
       return res.data;
     }
     const response = await api.get('/sensors', { params: { deviceId }, ...options });
-    return response.data;
+    return response;
   },
 
   // GET /api/sensors/history?deviceId=&start=&end= OR ?hours=
@@ -245,7 +256,8 @@ export const sensorAPI = {
       params.hours = startDate || 24; // fallback to hours window
     }
     const response = await api.get('/sensors/history', { params, ...options });
-    return response.data;
+    
+    return response;
   }
 };
 
@@ -262,7 +274,7 @@ export const wateringAPI = {
     const payload = { deviceId };
     if (duration) payload.duration = duration;
     const response = await api.post('/water/start', payload, options);
-    return response.data;
+    return response;
   },
 
   // POST /api/water/stop
@@ -272,7 +284,7 @@ export const wateringAPI = {
       return res.data;
     }
     const response = await api.post('/water/stop', { deviceId }, options);
-    return response.data;
+    return response;
   },
 
   // GET /api/water/status/:deviceId
@@ -282,7 +294,7 @@ export const wateringAPI = {
       return res.data;
     }
     const response = await api.get(`/water/status/${deviceId}`, options);
-    return response.data;
+    return response;
   },
 
   // GET /api/water/history
@@ -300,7 +312,7 @@ export const wateringAPI = {
       params: { limit, deviceId },
       ...options
     });
-    return response.data;
+    return response;
   }
 };
 
@@ -321,7 +333,7 @@ export const configAPI = {
       return res.data;
     }
     const response = await api.get('/config', { params: { deviceId } });
-    return response.data;
+    return response;
   },
 
   // GET /api/config/status?deviceId=
@@ -331,7 +343,7 @@ export const configAPI = {
       return res.data;
     }
     const response = await api.get('/config/status', { params: { deviceId }, ...options });
-    return response.data;
+    return response;
   },
 
   // GET /api/config/health  (deviceId is ignored by backend health)
@@ -341,7 +353,7 @@ export const configAPI = {
       return res.data;
     }
     const response = await api.get('/config/health');
-    return response.data;
+    return response;
   },
 
   getSystemStats: async () => {
@@ -355,7 +367,7 @@ export const configAPI = {
       return res.data;
     }
     const response = await api.get('/config/system-stats');
-    return response.data;
+    return response;
   },
 
   // POST /api/config (body includes deviceId)
@@ -365,7 +377,7 @@ export const configAPI = {
       return res.data;
     }
     const response = await api.post('/config', { ...config, deviceId });
-    return response.data;
+    return response;
   },
 
   // Data cleanup helpers
@@ -701,7 +713,7 @@ export const aiAPI = {
       params: { deviceId },
       ...options
     });
-    return response.data;
+    return response;
   },
 
   // GET /api/ai/insights?days=&deviceId=
@@ -709,7 +721,7 @@ export const aiAPI = {
     const params = { days };
     if (deviceId) params.deviceId = deviceId;
     const response = await api.get('/ai/insights', { params, ...options });
-    return response.data;
+    return response;
   },
 
   // GET /api/ai/usage?deviceModel=
@@ -731,7 +743,7 @@ export const aiAPI = {
       params: { deviceModel },
       ...options
     });
-    return response.data;
+    return response;
   },
 
   // GET /api/ai/usage/all
@@ -835,7 +847,7 @@ export const aiAPI = {
     if (startDate) params.startDate = startDate;
     if (endDate)   params.endDate   = endDate;
     const response = await api.get('/ai/disease/all', { params, ...options });
-    return response.data;
+    return response;
   },
 
   // ── Admin-only AI API Key management ──────────────────────────────

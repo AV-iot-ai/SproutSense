@@ -70,7 +70,14 @@ function notifyUpdate() {
 }
 
 export const mockDataStore = {
-  enabled: false,
+  enabled: (() => {
+    try {
+      const persisted = localStorage.getItem('ss_mock_enabled');
+      return persisted ? JSON.parse(persisted) : false;
+    } catch (e) {
+      return false;
+    }
+  })(),
   simulationActive: false, // Drift mode
   scenario: 'normal',
   _timer: null,
@@ -169,6 +176,14 @@ const SCENARIOS = {
 // ─── API ──────────────────────────────────────────────────────────────────────
 export function setMockEnabled(val) { 
   mockDataStore.enabled = !!val;
+  
+  // Persist to localStorage for admin panel toggle to survive refreshes
+  try {
+    localStorage.setItem('ss_mock_enabled', JSON.stringify(mockDataStore.enabled));
+  } catch (e) {
+    console.error('Failed to persist mock setting', e);
+  }
+
   if (mockDataStore.enabled) {
     logAction('MOCK_ENABLED', {
       scenario: mockDataStore.scenario,

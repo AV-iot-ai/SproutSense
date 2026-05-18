@@ -294,6 +294,7 @@ function App() {
   const location = useLocation();
   const auth = useAuth();
   const canReadSensorData = auth.hasPermission(PERMISSION.SENSORS_READ);
+  const canFetchSystemData = auth.isAuthenticated;
 
   // Resolve real admin-assigned device IDs for this user
   const { sensorDeviceId, camDeviceId } = useDevices({ enabled: auth.isAuthenticated });
@@ -402,6 +403,7 @@ function App() {
   const fetchDiseaseAlerts = useCallback(async () => {
     if (isGuestPublic) return;
     if (isMockEnabled()) return;
+    if (!auth.isAuthenticated) return;
     try {
       const end = new Date();
       const start = new Date(end.getTime() - 60 * 60 * 1000);
@@ -576,12 +578,20 @@ function App() {
     const { type, data: payload } = data;
     switch (type) {
       case 'sensor_update':    setSensors(normalizeSensorPayload(payload)); break;
-      case 'watering_started': setPumpActive(true);  showNotification('Watering started', 'success'); break;
-      case 'watering_stopped': setPumpActive(false); showNotification('Watering stopped', 'info');    break;
-      case 'config_updated':   showNotification('Configuration updated', 'success'); break;
+      case 'watering_started': 
+        setPumpActive(true);  
+        if (!isGuestPublic) showNotification('Watering started', 'success'); 
+        break;
+      case 'watering_stopped': 
+        setPumpActive(false); 
+        if (!isGuestPublic) showNotification('Watering stopped', 'info');    
+        break;
+      case 'config_updated':   
+        if (!isGuestPublic) showNotification('Configuration updated', 'success'); 
+        break;
       default: console.log('[WS] Unknown event:', type);
     }
-  }, []);
+  }, [isGuestPublic]);
 
   const { isConnected } = useWebSocket(handleWebSocketMessage);
 
@@ -616,6 +626,8 @@ function App() {
         });
         return; 
       }
+
+      if (!canFetchSystemData) return;
 
       try {
         const [sensorData, wateringStatus, configResponse, esp32StatusResponse, esp32CamStatusResponse, healthResponse] =
@@ -774,7 +786,10 @@ function App() {
     finally { setIsAiControlSaving(false); }
   };
 
-  const showNotification = (message, type = 'info') => setNotification({ message, type });
+  const showNotification = (message, type = 'info') => {
+    if (isGuestPublic) return; // Silent notifications for guest/public pages
+    setNotification({ message, type });
+  };
   const closeNotification = () => setNotification({ message: '', type: 'info' });
   const handleClearAlert    = useCallback((id) => setAlerts(prev => prev.filter(a => a.id !== id)), []);
   const handleClearAllAlerts = useCallback(() => setAlerts([]), []);
