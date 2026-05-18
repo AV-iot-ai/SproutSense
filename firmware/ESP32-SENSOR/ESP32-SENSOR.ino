@@ -34,8 +34,8 @@ String wifiPassword = "";
 /* ============================================================
    DEVICE IDENTITY
    ============================================================ */
-const char* DEVICE_ID = "ESP32-SENSOR-70V94S";
-const char* DEVICE_TOKEN = "8DAD954E32E7E1F5D0E7DB71964895E6AC432DEC4BB9D6F3BF58D985421049F8";
+const char* DEVICE_ID = "ESP32-SENSOR-6B70E9";
+const char* DEVICE_TOKEN = "6D8069AA50BFEF6E30CE03A2C73C35F190D375A61C441406BBBDC19E0034E80A";
 
 /* ============================================================
    BACKEND REST API ENDPOINTS
@@ -58,8 +58,8 @@ void configureSecureClient(WiFiClientSecure& client) {
    PIN CONFIGURATION
    ============================================================ */
 #define PIN_SOIL    35
-#define PIN_LDR     39
-#define PIN_DHT     13
+#define PIN_LDR     32
+#define PIN_DHT     15  // CHANGED FROM 13 TO 15
 #define PIN_RELAY   14
 #define PIN_FLOW    26
 #define PIN_BUZZER  27
@@ -77,10 +77,16 @@ void configureSecureClient(WiFiClientSecure& client) {
 #define TARGET_WATER_ML     100.0f
 #define PUMP_MAX_MS         20000
 
+// If your LDR module provides a digital HIGH/LOW output instead of an
+// analog voltage on AO, set this to 1. When set, the firmware will use
+// `digitalRead(PIN_LDR)` and treat light as a binary state. Set to 0 to
+// use the original analog behavior with `analogRead(PIN_LDR)`.
+#define LDR_DIGITAL_MODE 1
+
 /* ============================================================
    TIMING INTERVALS (ms)
    ============================================================ */
-#define IV_SENSORS         5000
+#define IV_SENSORS         2000
 #define IV_BACKEND        15000
 #define IV_HEARTBEAT      30000
 #define IV_CMD_POLL        8000
@@ -162,9 +168,12 @@ void buzzerBeep(uint16_t onMs, uint8_t times = 1, uint16_t gapMs = 100);
 void handleButton(unsigned long now);
 
 /* ============================================================
-   BUZZER HELPER
+   BUZZER & BUTTON STATE
    ============================================================ */
+bool g_buzzerEnabled = true;
+
 void buzzerBeep(uint16_t onMs, uint8_t times, uint16_t gapMs) {
+  if (!g_buzzerEnabled) return;
   for (uint8_t i = 0; i < times; i++) {
     digitalWrite(PIN_BUZZER, HIGH);
     delay(onMs);
@@ -307,7 +316,13 @@ void stopPump() {
 
   float vol = flowMl();
   unsigned long ms = millis() - g_pumpStartMs;
-  if (!g_safetyStop) buzzerBeep(400, 1);
+  
+  // <--- NEW: Distinct "Done" sound (Slow descending double beep)
+  if (!g_safetyStop) {
+    buzzerBeep(200, 1); 
+    delay(100);
+    buzzerBeep(400, 1);
+  }
 
   logSep("PUMP");
   logOK("PUMP", "OFF dispensed=%.1f mL runtime=%lu ms", vol, ms);
@@ -346,7 +361,17 @@ void updatePumpSafety() {
    SENSOR READS
    ============================================================ */
 float readMoisture() {
-  int raw = analogRead(PIN_SOIL);
+  // Take 10 samples and average them to get a stable reading
+  long sum = 0;
+  for (int i = 0; i < 10; i++) {
+    sum += analogRead(PIN_SOIL);
+    delay(10);
+  }
+  int raw = sum / 10;
+  
+  // MANDATORY DEBUG: View actual raw voltage numbers to fix 0/100 issue
+  Serial.print(">>> DEBUG_RAW_SOIL: "); Serial.println(raw);
+
   return constrain(
     (float)(MOISTURE_ADC_DRY - raw) / (float)(MOISTURE_ADC_DRY - MOISTURE_ADC_WET) * 100.0f,
     0.0f, 100.0f
@@ -354,19 +379,37 @@ float readMoisture() {
 }
 
 float readLux() {
+#if LDR_DIGITAL_MODE
+  return digitalRead(PIN_LDR) == HIGH ? LUX_MAX : 0.0f;
+#else
   return (analogRead(PIN_LDR) / 4095.0f) * LUX_MAX;
+#endif
 }
 
 void updateSensors() {
+  logLine("SENSORS", "Refreshing readings...");
   g_moisture = readMoisture();
   g_lux = readLux();
 
-  float t = dht.readTemperature();
-  float h = dht.readHumidity();
+  // Try multiple reads for DHT22 stability
+  float t = NAN;
+  float h = NAN;
+  for (int i = 0; i < 3; i++) {
+    t = dht.readTemperature();
+    h = dht.readHumidity();
+    if (!isnan(t) && !isnan(h)) break;
+    logWARN("SENSORS", "DHT22 read retry %d...", i + 1);
+    delay(200); 
+  }
+
   if (!isnan(t) && !isnan(h)) {
     g_temp = t;
     g_humidity = h;
     g_dhtValid = true;
+    logOK("SENSORS", "DHT22: %.1fC %.1f%%", g_temp, g_humidity);
+  } else {
+    g_dhtValid = false;
+    logERR("SENSORS", "DHT22 failed after 3 attempts");
   }
 }
 
@@ -416,14 +459,59 @@ void handleButton(unsigned long now) {
 
   g_btnStable = reading;
   if (g_btnStable == LOW) {
+    // Serial print that button is pressed
+    logLine("BUTTON", "Button Pressed!");
+    Serial.println(">>> BUTTON_PRESSED_EVENT_DETECTED <<<");
+
+    // Disable buzzer immediately when button is pressed
+    if (g_buzzerEnabled) {
+      g_buzzerEnabled = false;
+      logLine("BUTTON", "Buzzer DISABLED due to button press");
+      digitalWrite(PIN_BUZZER, LOW); // Ensure buzzer is physically off
+    }
+
+    // 1. Long press logic (2 seconds) to RESET WIFI
+    unsigned long pressStartTime = millis();
+    while(digitalRead(PIN_BUTTON) == LOW) {
+      if (millis() - pressStartTime > 2000) {
+        logLine("BUTTON", "RESET: Clearing WiFi and Restarting...");
+        // Re-enable buzzer temporarily for reset feedback if desired, or skip it
+        digitalWrite(PIN_BUZZER, HIGH); delay(100); digitalWrite(PIN_BUZZER, LOW); 
+        delay(50);
+        digitalWrite(PIN_BUZZER, HIGH); delay(100); digitalWrite(PIN_BUZZER, LOW); 
+        preferences.begin("sproutsense", false);
+        preferences.clear();
+        delay(1000);
+        ESP.restart();
+      }
+    }
+
+    // Original Toggle Buzzer Logic (Modified to be specific)
+    /*
+    g_buzzerEnabled = !g_buzzerEnabled;
+    if (g_buzzerEnabled) {
+      // Short high beep for ON
+      digitalWrite(PIN_BUZZER, HIGH); delay(100); digitalWrite(PIN_BUZZER, LOW);
+      logLine("BUTTON", "Buzzer ENABLED");
+    } else {
+      // Low double beep for OFF
+      digitalWrite(PIN_BUZZER, HIGH); delay(50); digitalWrite(PIN_BUZZER, LOW);
+      delay(50);
+      digitalWrite(PIN_BUZZER, HIGH); delay(50); digitalWrite(PIN_BUZZER, LOW);
+      logLine("BUTTON", "Buzzer DISABLED");
+    }
+    */
+
+    // 2. Original Pump Logic (Keep or modify as needed)
     if (g_pumpRunning) {
       logLine("BUTTON", "Pressed: pump OFF");
       g_manualPump = false;
       stopPump();
     } else {
-      logLine("BUTTON", "Pressed: pump ON");
-      g_manualPump = true;
-      startPump("button");
+      // Optional: Start pump on button press? 
+      // If you only want the button for Buzzer, comment out the next 2 lines.
+      // g_manualPump = true;
+      // startPump("button");
     }
   }
 }
@@ -449,12 +537,10 @@ void sendHeartbeat() {
 
   int code = httpPost(URL_STATUS, p);
   if (code == 200 || code == 201) {
-    logOK("HEARTBEAT", "→ %d uptime=%lus pump=%s ip=%s",
-          code, millis() / 1000UL,
-          g_pumpRunning ? "ON" : "OFF",
-          WiFi.localIP().toString().c_str());
+    logOK("HEARTBEAT", "Server online. Latency OK.");
+    logLine("HEARTBEAT", "Device stats: %lu sec uptime, RSSI: %d dBm", millis()/1000, WiFi.RSSI());
   } else {
-    logERR("HEARTBEAT", "FAILED → %d", code);
+    logERR("HEARTBEAT", "Server unreachable! HTTP Code: %d", code);
   }
 }
 
@@ -498,18 +584,19 @@ void sendSensors() {
     code = httpPost(URL_SENSORS, payload, 10000);
     if (code == 200 || code == 201) {
       g_backendOk++;
-      logOK("BACKEND", "Saved → %d  (ok=%u fail=%u)", code, g_backendOk, g_backendFail);
+      logOK("BACKEND", "Saved successfully → HTTP %d", code);      buzzerBeep(50, 1); // <--- NEW: Single short chirp for successful data upload      logLine("BACKEND", "Stats: Total OK=%u, Total FAIL=%u", g_backendOk, g_backendFail);
     } else if (code == 401 || code == 403) {
-      logERR("BACKEND", "Auth rejected → %d (no further retries this cycle)", code);
+      logERR("BACKEND", "Auth rejected → HTTP %d (Check Device Token)", code);
       break;
     } else {
-      logWARN("BACKEND", "Attempt %d failed → %d", attempt, code);
+      logWARN("BACKEND", "Attempt %d failed → HTTP %d", attempt, code);
     }
   }
   if (code != 200 && code != 201) {
     g_backendFail++;
-    logERR("BACKEND", "All 3 attempts failed → %d  (ok=%u fail=%u)",
-           code, g_backendOk, g_backendFail);
+    logERR("BACKEND", "FATAL: All 3 attempts failed (Network or Server problem)");
+    logLine("BACKEND", "Stats: Total OK=%u, Total FAIL=%u", g_backendOk, g_backendFail);
+    buzzerBeep(500, 1); // Long warning beep for network failure
   }
   logEnd();
 }
@@ -675,6 +762,7 @@ void handleSerial(char cmd) {
    SETUP
    ============================================================ */
 void setup() {
+  setCpuFrequencyMhz(80); // Reduce heat by lowering clock from 240MHz to 80MHz
   Serial.begin(115200);
   delay(1000);
 
@@ -701,7 +789,11 @@ void setup() {
 
   analogSetWidth(12);
   analogSetPinAttenuation(PIN_SOIL, ADC_11db);
+#if !LDR_DIGITAL_MODE
   analogSetPinAttenuation(PIN_LDR, ADC_11db);
+#else
+  pinMode(PIN_LDR, INPUT);
+#endif
   logOK("INIT", "ADC 12-bit 11dB per-pin attenuation");
 
   dht.begin();
@@ -721,6 +813,10 @@ void setup() {
     delay(2000);
   }
   if (!g_dhtValid) logERR("INIT", "DHT22 all attempts failed — using defaults");
+
+  // --- BUZZER BOOT SOUND ---
+  logLine("INIT", "Signalling boot...");
+  buzzerBeep(100, 3, 50); // 3 short beeps on power up
 
   preferences.begin("sproutsense", false);
   wifiSSID = preferences.getString("ssid", DEFAULT_WIFI_SSID);

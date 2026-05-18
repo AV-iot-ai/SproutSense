@@ -531,7 +531,7 @@ The sensor controller wiring is implemented on ESP32-WROOM-32 with ADC1 channels
 | Signal | Firmware Constant | ESP32 GPIO | Connected Module | Type |
 |---|---|---|---|---|
 | Soil moisture AO | PIN_SOIL / PIN_SOIL_MOISTURE | GPIO35 | Capacitive moisture sensor | Analog input |
-| LDR AO | PIN_LDR | GPIO39 | LDR analog module | Analog input |
+| LDR (digital) | PIN_LDR | GPIO32 | LDR module (digital output) | Digital input |
 | DHT22 DATA | PIN_DHT | GPIO13 | DHT22 | Digital input |
 | Flow pulse | PIN_FLOW | GPIO26 | YFS401 yellow wire | Interrupt input |
 | Relay control | PIN_RELAY | GPIO14 | Relay IN1 | Digital output |

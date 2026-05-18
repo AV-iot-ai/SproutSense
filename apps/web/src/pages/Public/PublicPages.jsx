@@ -195,16 +195,35 @@ export function PublicHomePage() {
 
       {/* Philosophical Scroll Reveal */}
       <section className="pp-quote-section">
-        <ScrollReveal
-          baseOpacity={0.1}
-          enableBlur
-          baseRotation={0}
-          blurStrength={10}
-        >
-          When does a plant die? When it is hit by a storm? No! When it suffers a disease?
-          No! When it is left in the dark?
-          No! A plant dies when it is forgotten!
-        </ScrollReveal>
+        <div className="pp-quote-bg" />
+
+        <div className="pp-quote-wrap">
+          <div className="pp-quote-circle" aria-hidden="true" />
+
+          <ScrollReveal baseOpacity={0} enableBlur baseRotation={0} blurStrength={6}>
+            <h2 className="pp-quote-main pp-typing-text">When does a plant die?</h2>
+          </ScrollReveal>
+
+          <div className="pp-quote-lines">
+            <ScrollReveal baseOpacity={0} enableBlur baseRotation={0} blurStrength={8}>
+              <p className="pp-quote-line" style={{ animationDelay: '5s' }}>When it is hit by a storm? No!</p>
+            </ScrollReveal>
+
+            <ScrollReveal baseOpacity={0} enableBlur baseRotation={0} blurStrength={8}>
+              <p className="pp-quote-line" style={{ animationDelay: '10s' }}>When it suffers a disease? No!</p>
+            </ScrollReveal>
+
+            <ScrollReveal baseOpacity={0} enableBlur baseRotation={0} blurStrength={8}>
+              <p className="pp-quote-line" style={{ animationDelay: '15s' }}>When it is left in the dark? No!</p>
+            </ScrollReveal>
+
+            <ScrollReveal baseOpacity={0} enableBlur baseRotation={0} blurStrength={10}>
+              <p className="pp-quote-line pp-quote-final" style={{ animationDelay: '20s' }}>A plant dies when it is forgotten!</p>
+            </ScrollReveal>
+          </div>
+        </div>
+
+        
       </section>
 
     </div>

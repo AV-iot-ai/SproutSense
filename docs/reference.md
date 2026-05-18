@@ -674,7 +674,7 @@ The current configuration reference uses the following mapping:
 | Signal | Pin | Purpose |
 |---|---:|---|
 | Soil moisture AO | GPIO 35 | Soil moisture input |
-| LDR AO | GPIO 39 | Light input |
+| LDR (digital) | GPIO 32 | Light input (digital) |
 | DHT22 DATA | GPIO 13 | Temperature and humidity |
 | Flow pulse | GPIO 26 | Water flow pulses |
 | Relay IN1 | GPIO 14 | Pump relay control |

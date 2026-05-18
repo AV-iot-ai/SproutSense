@@ -55,9 +55,7 @@ const buildAggregatedSeries = (rows, hours) => {
   const buckets = new Map();
 
   rows.forEach((row) => {
-    const timestampMs = Number.isFinite(Number(row.timestampMs))
-      ? Number(row.timestampMs)
-      : new Date(row.timestamp || Date.now()).getTime();
+    const timestampMs = row.timestampMs || new Date(row.timestamp || Date.now()).getTime();
     const bucketKey = Math.floor(timestampMs / bucketMs);
     if (!buckets.has(bucketKey)) buckets.set(bucketKey, []);
     buckets.get(bucketKey).push({ ...row, timestampMs });

@@ -17,7 +17,7 @@ Set:
 
 Sensors:
 - Moisture AO -> GPIO 35
-- LDR AO -> GPIO 39
+ - LDR (digital) -> GPIO 32
 - DHT22 DATA -> GPIO 13
 - Flow pulse (YFS401 / YF-S401) -> GPIO 26
 - Button input (active LOW, INPUT_PULLUP) -> GPIO 33

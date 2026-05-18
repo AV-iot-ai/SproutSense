@@ -560,12 +560,47 @@
 }
 
 .pp-quote-section {
-  padding: 10rem 2rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
+  position:relative;
+  overflow:visible;
+  padding:6rem 1rem;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
+
+.pp-quote-bg { position:absolute; inset:0; background:radial-gradient(1200px 420px at 12% 22%, rgba(6,70,30,0.08), transparent 12%), radial-gradient(900px 340px at 88% 78%, rgba(30,100,50,0.05), transparent 10%); pointer-events:none; }
+.pp-typing-text { display:inline-block; border-right:3px solid rgba(142,247,184,0.8); animation:ppTyping 4s steps(23,end) 0.5s both, ppBlink 0.7s step-end infinite; white-space:nowrap; overflow:hidden; }
+
+.pp-quote-wrap { position:relative; max-width:980px; text-align:center; padding:3rem 2rem; backdrop-filter: blur(0px); }
+
+.pp-quote-circle { position:absolute; left:50%; top:36%; transform:translate(-50%,-50%); width:520px; height:520px; border-radius:50%; background:radial-gradient(ellipse at center, rgba(12,80,36,0.07), rgba(10,50,30,0.03)); filter:blur(34px); z-index:0; pointer-events:none; animation:circlePulse 2.6s ease-in-out both; animation-delay:1.05s; }
+
+.pp-quote-main { position:relative; z-index:2; font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; font-size:clamp(1.8rem,4.6vw,3.6rem); margin:0 0 0.8rem; font-weight:800; color:transparent; background-image:linear-gradient(90deg,#8ef7b8 0%, #5fe08f 45%, #d7ffec 100%); -webkit-background-clip:text; background-clip:text; text-shadow:0 10px 30px rgba(2,40,18,0.35); opacity:0; transform:translateY(16px) scale(.995); animation:headlineReveal .9s cubic-bezier(.2,.9,.3,1) forwards; animation-delay:0.06s; letter-spacing:0.2px; padding-inline: clamp(1.2rem,5.5vw,4rem); }
+
+.pp-quote-main::before { content: '“'; position:absolute; left:0.5rem; top:-0.6rem; font-size:clamp(3rem,6.5vw,4.6rem); color:rgba(120,255,190,0.08); z-index:1; pointer-events:none; font-weight:800; transform:translateX(-70%); }
+.pp-quote-main::after { content: '”'; position:absolute; right:0.5rem; top:-0.6rem; font-size:clamp(3rem,6.5vw,4.6rem); color:rgba(120,255,190,0.08); z-index:1; pointer-events:none; font-weight:800; transform:translateX(70%); }
+
+.pp-quote-lines { position:relative; z-index:2; display:flex; flex-direction:column; gap:1rem; align-items:center; margin-top:1.6rem; }
+.pp-quote-line { font-family: 'Georgia', 'Times New Roman', serif; font-size:clamp(1.02rem,2.1vw,1.25rem); margin:0; opacity:0; transform:translateY(18px) scale(0.985); animation:fadeUpScale .72s cubic-bezier(.2,.9,.3,1) forwards; color:rgba(210,250,225,0.95); max-width:72%; line-height:1.6; font-style:italic; }
+
+.pp-quote-final { font-family: 'Georgia', 'Times New Roman', serif; font-size:clamp(1.05rem,2.6vw,1.6rem); font-weight:700; color:#e6ffee; letter-spacing:0.6px; transform-origin:center; animation:finalPop .9s cubic-bezier(.17,.88,.32,1) forwards; text-shadow:0 10px 36px rgba(6,90,30,0.18); margin-top:0.2rem; }
+
+.pp-quote-accent { display:inline-block; padding:0.28rem 0.6rem; background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:999px; box-shadow:inset 0 -2px 8px rgba(0,0,0,0.18); }
+
+.pp-vine-path { stroke-dasharray:420; stroke-dashoffset:420; animation:vineDraw 1.6s ease forwards; animation-delay:0.18s; stroke:rgba(120,255,180,0.18); }
+
+@keyframes headlineReveal { 0% { opacity:0; transform:translateY(14px) scale(.995) skewY(-0.6deg); letter-spacing:0.6px; } 60% { transform:translateY(-6px) scale(1.03) skewY(0); opacity:1; } 100% { transform:translateY(0) scale(1); opacity:1; } }
+@keyframes vineDraw { to { stroke-dashoffset:0; } }
+
+@keyframes circlePulse { 0% { transform:translate(-50%,-50%) scale(.98); opacity:0.92; } 50% { transform:translate(-50%,-50%) scale(1.03); opacity:1; } 100% { transform:translate(-50%,-50%) scale(.99); opacity:0.98; } }
+
+@keyframes finalPop { 0% { opacity:0; transform:translateY(10px) scale(.98); } 60% { transform:translateY(-2px) scale(1.02); opacity:1; } 100% { transform:translateY(0) scale(1); opacity:1; } }
+@keyframes fadeUpScale { to { opacity:1; transform:translateY(0) scale(1); } }
+
+@keyframes ppTyping { 0% { width:0; } 100% { width:23ch; } }
+@keyframes ppBlink { 0%,49%,100% { border-right-color:rgba(142,247,184,0.8); } 50%,99% { border-right-color:transparent; } }
+
+@media (prefers-reduced-motion: reduce) { .pp-quote-line, .pp-quote-main, .pp-quote-final, .pp-quote-circle, .pp-typing-text { animation:none; opacity:1; transform:none; stroke-dashoffset:0; width:auto; border:none; } }
 
 /* ─── Responsive ──────────────────────────────────── */
 
@@ -775,6 +810,16 @@
     font-size: 1.05rem;
     line-height: 1.6;
   }
+
+  /* hide large decorative quote marks on small screens and reduce padding */
+  .pp-quote-main::before,
+  .pp-quote-main::after,
+  .pp-quote-circle { display: none; }
+
+  .pp-quote-main { padding: 0 1rem; font-size: clamp(1.6rem,7.5vw,2.6rem); }
+
+  /* hide typing animation on small screens */
+  .pp-typing-container { display: none; }
 
   /* tech grid: 1 col */
   .pp-tech-grid {

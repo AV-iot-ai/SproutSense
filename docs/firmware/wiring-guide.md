@@ -37,7 +37,7 @@ Use this board for:
 
 ### Sensors (Analog/Other)
 - **GPIO 35** (`PIN_SOIL_MOISTURE`): Soil Moisture AO
-- **GPIO 39** (`PIN_LDR`): LDR AO
+- **GPIO 32** (`PIN_LDR`): LDR digital output (use `LDR_DIGITAL_MODE` = 1)
 - **GPIO 13** (`PIN_DHT`): DHT22 DATA
 - **GPIO 26** (`PIN_FLOW`): Flow sensor pulse (YFS401/YF-S401 yellow)
 - **GPIO 33** (`PIN_BUTTON`): Manual button input (active LOW)
@@ -114,7 +114,7 @@ Typical:
 
 - Common GND connected across ESP32, relay PSU, sensors
 - Pump powered from external 5V (not directly from ESP32 3.3V)
-- Sensor AO lines are on ADC1 pins (35,39)
+- Sensor AO lines are on ADC1 pins (35). The LDR in digital mode uses GPIO32.
 - No Blynk pins or Blynk dependencies in wiring
 - Button on GPIO33 pulls to GND when pressed
 
@@ -128,7 +128,7 @@ Firmware file:
 
 Pin defines in firmware:
 - `PIN_SOIL_MOISTURE` = 35
-- `PIN_LDR` = 39
+ - `PIN_LDR` = 32
 - `PIN_DHT` = 13
 - `PIN_FLOW` = 26
 - `PIN_RELAY` = 14
