@@ -23,6 +23,8 @@
    PIN CONFIGURATION
    ============================================================ */
 #define PIN_RELAY_PUMP      8    // HIGH to activate pump relay
+#define PIN_BUZZER          9    // Buzzer control pin
+#define PIN_BUTTON          2    // Mute button (Interrupt pin)
 #define PIN_STATUS_LED      13   // Status indicator (built-in LED)
 #define PIN_V_MONITOR       A0   // Optional: 5V monitoring
 
@@ -48,6 +50,9 @@
    STATE VARIABLES
    ============================================================ */
 bool g_pumpRunning = false;
+bool g_buzzerActive = false;
+bool g_buzzerMuted = false;
+volatile bool g_buttonPressed = false;
 unsigned long g_pumpStartMs = 0;
 unsigned long g_lastMonitorMs = 0;
 unsigned long g_lastHeartbeatMs = 0;
@@ -57,14 +62,23 @@ bool g_lowVoltageAlert = false;
 /* ============================================================
    SETUP
    ============================================================ */
+void handleButtonPress() {
+  g_buttonPressed = true;
+}
+
 void setup() {
   Serial.begin(BAUD_RATE);  // Hardware serial for ESP32
   
   pinMode(PIN_RELAY_PUMP, OUTPUT);
+  pinMode(PIN_BUZZER, OUTPUT);
+  pinMode(PIN_BUTTON, INPUT_PULLUP);
   pinMode(PIN_STATUS_LED, OUTPUT);
+
+  attachInterrupt(digitalPinToInterrupt(PIN_BUTTON), handleButtonPress, FALLING);
   
   // Start with safe state
   digitalWrite(PIN_RELAY_PUMP, LOW);   // Pump off
+  digitalWrite(PIN_BUZZER, LOW);       // Buzzer off
   digitalWrite(PIN_STATUS_LED, LOW);   // LED off
   
   delay(1000);
@@ -79,6 +93,20 @@ void setup() {
 void loop() {
   unsigned long now = millis();
   
+  // Handle mute button
+  if (g_buttonPressed) {
+    g_buttonPressed = false;
+    if (g_pumpRunning) {
+      g_buzzerMuted = !g_buzzerMuted;
+      if (g_buzzerMuted) {
+        digitalWrite(PIN_BUZZER, LOW);
+      } else {
+        digitalWrite(PIN_BUZZER, HIGH);
+      }
+      logInfo("UI", "Buzzer %s", g_buzzerMuted ? "MUTED" : "UNMUTED");
+    }
+  }
+
   // Process commands from ESP32
   if (Serial.available()) {
     handleSerialCommand();
@@ -177,7 +205,9 @@ void startPump() {
   
   g_pumpRunning = true;
   g_pumpStartMs = millis();
+  g_buzzerMuted = false;
   digitalWrite(PIN_RELAY_PUMP, HIGH);
+  digitalWrite(PIN_BUZZER, HIGH);
   digitalWrite(PIN_STATUS_LED, HIGH);  // LED on while pumping
   
   logOK("PUMP", "Relay activated");
@@ -191,6 +221,7 @@ void stopPump() {
   
   g_pumpRunning = false;
   digitalWrite(PIN_RELAY_PUMP, LOW);
+  digitalWrite(PIN_BUZZER, LOW);
   digitalWrite(PIN_STATUS_LED, LOW);
   
   unsigned long runtime = millis() - g_pumpStartMs;

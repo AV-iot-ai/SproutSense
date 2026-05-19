@@ -118,7 +118,7 @@ const DEFAULT_ADVANCED_SETTINGS = {
   colors: {
     accent: '#22d3ee',
     moisture: '#22c55e',
-    temperature: '#f59e0b',
+    temperature: '#f97316',
     humidity: '#22d3ee',
   },
   dashboard: {

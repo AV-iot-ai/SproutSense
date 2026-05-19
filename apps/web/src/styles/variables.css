@@ -114,7 +114,7 @@
   /* ── SEMANTIC SENSOR COLORS (Dark Mode - Vibrant) */
   /* Sensor colors map to sensor types and appear in charts/gauges. */
   --sensor-moisture    : #22c55e;    /* Success Green */
-  --sensor-temperature : #f59e0b;    /* Warm Amber */
+  --sensor-temperature : #f97316;    /* Vibrant Orange */
   --sensor-humidity    : #22d3ee;    /* Bright Cyan */
   --sensor-ph          : #a78bfa;    /* Vibrant Purple */
   --sensor-light       : #fbbf24;    /* Golden Yellow */
@@ -183,7 +183,7 @@
   /* ── ANALYTICS CHART COLORS (Dark) */
   /* Chart series colors. Prefer using `getCSSVariableValue()` in JS when a concrete color string is required. */
   --chart-moisture  : #00f2fe;
-  --chart-temp      : #f59e0b;
+  --chart-temp      : #f97316;
   --chart-humidity  : #22d3ee;
   --chart-light     : #facc15;
   --chart-flow      : #3b82f6;
@@ -368,7 +368,7 @@
 
   /* ── SEMANTIC SENSOR COLORS (Light Mode - Darker, Professional) */
   --sensor-moisture    : #1B5E20;    /* Deep Green */
-  --sensor-temperature : #A86D00;    /* Deep Amber */
+  --sensor-temperature : #ea580c;    /* Deep Orange */
   --sensor-humidity    : #0277BD;    /* Deep Blue */
   --sensor-ph          : #6A1B9A;    /* Deep Purple */
   --sensor-light       : #F57C00;    /* Deep Orange */
@@ -432,7 +432,7 @@
 
   /* ── ANALYTICS CHART COLORS (Light) */
   --chart-moisture  : #0277BD;
-  --chart-temp      : #F57C00;
+  --chart-temp      : #ea580c;
   --chart-humidity  : #0288D1;
   --chart-light     : #F57F17;
   --chart-flow      : #1565C0;
@@ -559,7 +559,7 @@
   /* ── ADMIN & BADGE COLORS ── */
   --admin-badge        : #7c3aed;
   --chart-moisture  : #3b82f6;
-  --chart-temp      : #f59e0b;
+  --chart-temp      : #f97316;
   --chart-humidity  : #06b6d4;
   --chart-light     : #facc15;
   --chart-flow      : #6366f1;
@@ -645,7 +645,7 @@
   /* ── ADMIN & BADGE COLORS ── */
   --admin-badge        : #16a34a;
   --chart-moisture  : #0ea5e9;
-  --chart-temp      : #f59e0b;
+  --chart-temp      : #f97316;
   --chart-humidity  : #14b8a6;
   --chart-light     : #facc15;
   --chart-flow      : #3b82f6;

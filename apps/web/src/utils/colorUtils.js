@@ -45,7 +45,7 @@ export function getCSSVariableValue(varName) {
 function getFallbackColor(varName) {
   const fallbacks = {
     '--sensor-moisture': '#22c55e',
-    '--sensor-temperature': '#f59e0b',
+    '--sensor-temperature': '#f97316',
     '--sensor-humidity': '#22d3ee',
     '--sensor-ph': '#a78bfa',
     '--sensor-light': '#fbbf24',
@@ -91,7 +91,7 @@ function getFallbackColor(varName) {
     '--mock-banner-panel-text': '#cbd5e1',
     // Analytics / chart color fallbacks
     '--chart-moisture': '#00f2fe',
-    '--chart-temp': '#f59e0b',
+    '--chart-temp': '#f97316',
     '--chart-humidity': '#22d3ee',
     '--chart-light': '#facc15',
     '--chart-flow': '#3b82f6',

@@ -22,7 +22,8 @@
 | **Relay Module** | **Arduino 5V** | 5V / VCC | GND |
 | **Soil Moisture** | **ESP32 3.3V** | VCC | GND |
 | **Flow Meter** | **Arduino 5V** | VCC (Red) | GND (Black) |
-| **Buzzer** | **Arduino 5V** | (+) / VCC | (Signal) |
+| **Buzzer** | **Arduino 5V** | (+) / VCC | PIN 9 |
+| **Button** | **Logic (GND)** | - | PIN 2 |
 | **DHT22** | **ESP32 3.3V** | VCC | GND |
 | **LDR Module** | **Digital (GPIO)** | VCC | GND |
 
@@ -37,9 +38,6 @@
 | **GPIO 32** | Analog IN | LDR Signal (AO) |
 | **GPIO 15** | Digital IN | DHT22 Data Pin |
 | **GPIO 26** | Interrupt | Flow Meter Signal (Yellow) |
-| **GPIO 27** | Output | Buzzer Control |
-| **GPIO 14** | Output | Relay Control (if direct) |
-| **GPIO 33** | Input | **Push Button**:<br>1. One side to GPIO 33<br>2. Other side to ESP32 GND |
 | **GPIO 16** | RX2 | Arduino Uno TX |
 | **GPIO 17** | TX2 | Arduino Uno RX |
 
@@ -48,7 +46,9 @@
 | :--- | :--- | :--- |
 | **Pin 0** | RX | ESP32 TX (GPIO 17) |
 | **Pin 1** | TX | ESP32 RX (GPIO 16) |
+| **Pin 2** | Interrupt | **Push Button**:<br>1. One side to Pin 2<br>2. Other side to Arduino GND |
 | **Pin 8** | Output | Relay Module Signal (IN) |
+| **Pin 9** | Output | **Buzzer**:<br>1. (+) to Pin 9<br>2. (-) to Arduino **GND** |
 
 ---
 
@@ -63,20 +63,14 @@
 
 ## 4. System Logic & Beep Codes
 
-### Buzzer Behavior (Status Sounds)
-*   **Power On / Reset**: 3 Short beeps (Signals ESP32 started).
-*   **Pump Activated**: 2 Short beeps (Signals watering started).
-*   **HTTP/Network Failure**: 1 Long beep (Signals data could not reach server).
+### Buzzer Behavior (Arduino Managed)
+*   **Automatic Trigger**: Buzzer turns ON immediately when Pump Relay (Pin 8) is activated.
+*   **Mute Toggle**: Pressing the Button (Pin 2) while pump is running will toggle the buzzer status.
+*   **Reset**: Buzzer logic resets (unmuted) every time a new watering cycle starts.
 
-### Button Behavior (Silence Control)
-*   **Single Press**: 
-    1.  Immediately silences current buzzer alert.
-    2.  Disables all future buzzer beeps.
-    3.  Sends a serial log: `>>> BUTTON_PRESSED_EVENT_DETECTED <<<`.
-*   **Long Press (2s)**: Resets Wi-Fi credentials and restarts the device.
-*   **Confirmation**:
-    *   **Buzzer ON**: 1 Short high beep.
-    *   **Buzzer OFF**: 2 Very short low beeps.
+### Button Behavior (Uno Interrupt)
+*   **Interrupt Driven**: Connected to Pin 2 (`INPUT_PULLUP`).
+*   **Function**: Acts as a hard-wired mute switch for the buzzer alerts during motor operation.
 
 ---
 

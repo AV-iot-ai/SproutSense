@@ -4,7 +4,10 @@ import {
   getMockSensors, 
   getMockAlerts, 
   getMockCropHealth, 
-  getMockWeather 
+  getMockWeather,
+  startMockPump,
+  stopMockPump,
+  getMockPumpActive
 } from '../services/mockDataService';
 
 function normalizeApiBaseUrl(rawValue) {
@@ -130,22 +133,32 @@ function normalizeMockSensorReading(sensor, fallbackTimestamp = new Date().toISO
 function pickMockSensorBaseline(mockSensors) {
   if (!Array.isArray(mockSensors) || mockSensors.length === 0) return null;
 
-  const normalized = mockSensors
+  const plantSensors = mockSensors
     .map((sensor) => normalizeMockSensorReading(sensor))
     .filter((sensor) => sensor?.sensorType !== 'flow')
     .filter(Boolean);
 
-  if (normalized.length === 0) return null;
+  const flowSensors = mockSensors
+    .map((sensor) => normalizeMockSensorReading(sensor))
+    .filter((sensor) => sensor?.sensorType === 'flow')
+    .filter(Boolean);
 
-  const avg = (key) => normalized.reduce((sum, row) => sum + Number(row[key] || 0), 0) / normalized.length;
+  if (plantSensors.length === 0) return null;
+
+  const avgPlant = (key) => plantSensors.reduce((sum, row) => sum + Number(row[key] || 0), 0) / plantSensors.length;
+  const avgFlow = (key) => flowSensors.length > 0 
+    ? flowSensors.reduce((sum, row) => sum + Number(row[key] || 0), 0) / flowSensors.length
+    : null;
 
   return {
-    soilMoisture: avg('soilMoisture'),
-    temperature: avg('temperature'),
-    humidity: avg('humidity'),
-    light: avg('light'),
-    pH: avg('pH') || 6.8,
-    leafCount: avg('leafCount') || 28,
+    soilMoisture: avgPlant('soilMoisture'),
+    temperature: avgPlant('temperature'),
+    humidity: avgPlant('humidity'),
+    light: avgPlant('light'),
+    pH: avgPlant('pH') || 6.8,
+    leafCount: avgPlant('leafCount') || 28,
+    flowRate: avgFlow('flowRate') ?? 120,
+    flowVolume: avgFlow('flowVolume') ?? 450,
   };
 }
 
@@ -176,8 +189,14 @@ function generateMockSensorHistory(startDate, endDate, mockSensors) {
     const light = clamp(baseline.light + Math.sin(idx / 2.8) * 160, 40, 65000);
     const pH = clamp(baseline.pH + Math.cos(idx / 9.3) * 0.16, 4.5, 8.5);
 
-    const flowRate = soilMoisture < 35
-      ? clamp(90 + Math.sin(idx / 2.4) * 22, 45, 180)
+    // Periodically simulate active flow watering cycles (active for 4 points out of 16, i.e., 1 hour every 4 hours, or when soilMoisture is dry)
+    const baseFlowRate = baseline.flowRate > 0 ? baseline.flowRate : 120;
+    const isWateringActive = (soilMoisture < 35) || ((idx % 16) < 4);
+    const flowRate = isWateringActive
+      ? clamp(baseFlowRate + Math.sin(idx / 1.5) * 15, 30, 800)
+      : 0;
+    const flowVolume = isWateringActive
+      ? clamp(baseline.flowVolume + idx * (flowRate / 10), 0, 8000)
       : 0;
 
     return {
@@ -188,7 +207,7 @@ function generateMockSensorHistory(startDate, endDate, mockSensors) {
       pH: Number(pH.toFixed(2)),
       ph: Number(pH.toFixed(2)),
       flowRate: Number(flowRate.toFixed(1)),
-      flowVolume: flowRate > 0 ? Math.round(flowRate * 1.5) : 0,
+      flowVolume: Math.round(flowVolume),
       leafCount: Math.round(clamp(baseline.leafCount + Math.sin(idx / 8.8) * 1.8, 5, 450)),
       deviceId: 'ESP32-SENSOR',
       timestamp: new Date(timestampMs).toISOString(),
@@ -223,8 +242,16 @@ export const sensorAPI = {
   getLatest: async (deviceId = 'ESP32-SENSOR', options = {}) => {
     if (shouldUseMock(options)) {
       const mockSensors = getMockSensors();
-      const mockPrimary = mockSensors.length > 0 ? mockSensors[0] : null;
-      const normalized = normalizeMockSensorReading(mockPrimary);
+      const mockPrimary = mockSensors.find(s => s.sensorType !== 'flow') || mockSensors[0] || null;
+      const mockFlow = mockSensors.find(s => s.sensorType === 'flow');
+
+      const merged = mockPrimary ? {
+        ...mockPrimary,
+        flowRate: mockFlow ? mockFlow.flowRate : 0,
+        flowVolume: mockFlow ? mockFlow.flowVolume : 0,
+      } : null;
+
+      const normalized = normalizeMockSensorReading(merged);
       const res = await mockResponse(normalized);
       return res.data;
     }
@@ -268,6 +295,7 @@ export const wateringAPI = {
   // POST /api/water/start
   start: async (deviceId = 'ESP32-SENSOR', duration = null, options = {}) => {
     if (isMockEnabled()) {
+      startMockPump();
       const res = await mockResponse({ success: true, message: 'Mock pump started', pumpActive: true });
       return res.data;
     }
@@ -280,6 +308,7 @@ export const wateringAPI = {
   // POST /api/water/stop
   stop: async (deviceId = 'ESP32-SENSOR', options = {}) => {
     if (isMockEnabled()) {
+      stopMockPump();
       const res = await mockResponse({ success: true, message: 'Mock pump stopped', pumpActive: false });
       return res.data;
     }
@@ -290,7 +319,7 @@ export const wateringAPI = {
   // GET /api/water/status/:deviceId
   getStatus: async (deviceId = 'ESP32-SENSOR', options = {}) => {
     if (isMockEnabled()) {
-      const res = await mockResponse({ pumpActive: false, lastWatered: new Date().toISOString() });
+      const res = await mockResponse({ pumpActive: getMockPumpActive(), lastWatered: new Date().toISOString() });
       return res.data;
     }
     const response = await api.get(`/water/status/${deviceId}`, options);

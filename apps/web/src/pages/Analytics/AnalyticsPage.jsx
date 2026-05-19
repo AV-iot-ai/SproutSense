@@ -9,6 +9,7 @@ import {
 } from 'recharts';
 import { aiAPI, sensorAPI, wateringAPI, configAPI } from '../../utils/api';
 import { getAnalyticsSensors, getSensorValue, getStatusForValue } from '../../utils/sensorRegistry';
+import { isMockEnabled } from '../../services/mockDataService';
 import { GlassIcon } from '../../components/bits/GlassIcon';
 import styles from './AnalyticsPage.module.css';
 import { SkeletonLoader } from '../../components/layout/SkeletonLoader';
@@ -20,11 +21,6 @@ const TIME_RANGES = [
   { label: '24h', hours: 24  },
   { label: '7d',  hours: 168 },
   { label: '30d', hours: 720 },
-];
-
-const ANALYTICS_MODES = [
-  { id: 'realtime', label: 'Real Time' },
-  { id: 'comprehensive', label: 'Comprehensive' },
 ];
 
 const AVERAGE_SERIES_KEYS = [
@@ -180,6 +176,26 @@ function summarizeValues(values) {
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
+  
+  // Custom detection for Pie Chart items (which don't have a label/timestamp but do have name/value)
+  const isPie = payload[0]?.payload?.name !== undefined && payload[0]?.payload?.value !== undefined && !payload[0]?.payload?.timestamp;
+  
+  if (isPie) {
+    const entry = payload[0];
+    const nameStr = String(entry.name || entry.payload.name);
+    return (
+      <div className={styles.chartTooltip}>
+        <p className={styles.tooltipLabel} style={{ textTransform: 'uppercase', fontWeight: 700 }}>
+          {nameStr} Status
+        </p>
+        <p style={{ color: entry.color || entry.fill }}>
+          <span className={styles.tooltipDot} style={{ backgroundColor: entry.color || entry.fill }} />
+          <strong>Sensors Count:</strong>&nbsp;{entry.value}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.chartTooltip}>
       <p className={styles.tooltipLabel}>
@@ -223,7 +239,7 @@ function WeatherCard() {
       const url = (lat != null && lon != null)
         ? `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${WEATHER_KEY}`
         : `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(wCity)}&units=metric&appid=${WEATHER_KEY}`;
-      const res = await fetch(url);
+      const res = await fetch(url, { credentials: 'omit' });
       const data = await res.json();
       if (data.cod !== 200) throw new Error(data.message);
       setWeather(data);
@@ -317,7 +333,6 @@ export default function AnalyticsPage() {
   const [visualPrefs, setVisualPrefs] = useState(() => loadVisualPrefs());
   
   const [selectedRange, setSelectedRange] = useState(TIME_RANGES[1]);
-  const [analyticsMode, setAnalyticsMode] = useState('realtime');
   const [sensorData,    setSensorData]    = useState([]);
   const [diseaseData,   setDiseaseData]   = useState([]);
   const [wateringData,  setWateringData]  = useState([]);
@@ -366,7 +381,7 @@ export default function AnalyticsPage() {
     lineType: visualPrefs?.charts?.chartStyle === 'straight' ? 'linear' : 'monotone',
   }), [visualPrefs]);
 
-  const viewMode = analyticsMode === 'realtime' && isLive ? 'realtime' : 'comprehensive';
+  const viewMode = isLive ? 'realtime' : 'comprehensive';
 
   // Get selected deviceId from localStorage
   const getSelectedDeviceId = () => localStorage.getItem('selectedDeviceId') || 'ESP32-SENSOR';
@@ -395,21 +410,29 @@ export default function AnalyticsPage() {
       const start = new Date(end.getTime() - selectedRange.hours * 3_600_000);
       const deviceId = getSelectedDeviceId();
 
-      // When the physical device is online, force live API calls so analytics reads DB-backed data.
-      const statusResponse = await configAPI.getStatus(deviceId, {
-        signal: controller.signal,
-        forceLive: true,
-      });
-      const statusPayload = statusResponse?.data || statusResponse;
-      const lastSeenMs = statusPayload?.lastSeen ? new Date(statusPayload.lastSeen).getTime() : 0;
-      const isDeviceOnline = Boolean(statusPayload?.online) && Number.isFinite(lastSeenMs) && (Date.now() - lastSeenMs < 5 * 60 * 1000);
-      
+      let isDeviceOnline = false;
+      let statusPayload = null;
+
+      if (isMockEnabled()) {
+        isDeviceOnline = true;
+        statusPayload = { online: true, lastSeen: new Date().toISOString() };
+      } else {
+        // When the physical device is online, force live API calls so analytics reads DB-backed data.
+        const statusResponse = await configAPI.getStatus(deviceId, {
+          signal: controller.signal,
+          forceLive: true,
+        });
+        statusPayload = statusResponse?.data || statusResponse;
+        const lastSeenMs = statusPayload?.lastSeen ? new Date(statusPayload.lastSeen).getTime() : 0;
+        isDeviceOnline = Boolean(statusPayload?.online) && Number.isFinite(lastSeenMs) && (Date.now() - lastSeenMs < 5 * 60 * 1000);
+      }
+
       setIsLive(isDeviceOnline);
       setLastOnline(statusPayload?.lastSeen || null);
 
       const requestOptions = {
         signal: controller.signal,
-        forceLive: isDeviceOnline,
+        forceLive: isMockEnabled() ? false : isDeviceOnline,
       };
 
       const [sensorResp, diseaseResp, wateringResp] = await Promise.all([
@@ -418,9 +441,29 @@ export default function AnalyticsPage() {
         wateringAPI.getLogs(500, deviceId, requestOptions),
       ]);
 
-      let sensors   = Array.isArray(sensorResp?.data) ? sensorResp.data : (sensorResp || []);
+      let sensors = [];
+      if (sensorResp) {
+        if (Array.isArray(sensorResp)) {
+          sensors = sensorResp;
+        } else if (Array.isArray(sensorResp.readings)) {
+          sensors = sensorResp.readings;
+        } else if (Array.isArray(sensorResp.data)) {
+          sensors = sensorResp.data;
+        }
+      }
+
       const diseases  = diseaseResp?.detections || diseaseResp?.data?.detections || [];
-      let waterLogs = Array.isArray(wateringResp?.data) ? wateringResp.data : (wateringResp || []);
+
+      let waterLogs = [];
+      if (wateringResp) {
+        if (Array.isArray(wateringResp)) {
+          waterLogs = wateringResp;
+        } else if (Array.isArray(wateringResp.history)) {
+          waterLogs = wateringResp.history;
+        } else if (Array.isArray(wateringResp.data)) {
+          waterLogs = wateringResp.data;
+        }
+      }
 
       const parsed = sensors.map(s => ({
         ...s,
@@ -768,17 +811,6 @@ export default function AnalyticsPage() {
           <WeatherCard />
           <div className={styles.headerActions}>
             <div className={styles.controls}>
-              {ANALYTICS_MODES.map((mode) => (
-                <button
-                  key={mode.id}
-                  className={`${styles.sensorSwitchBtn} ${analyticsMode === mode.id ? styles.activeSensorBtn : ''}`}
-                  onClick={() => setAnalyticsMode(mode.id)}
-                >
-                  {mode.label}
-                </button>
-              ))}
-            </div>
-            <div className={styles.controls}>
               {TIME_RANGES.map(tr => (
                 <button
                   key={tr.label}
@@ -916,6 +948,7 @@ export default function AnalyticsPage() {
                     innerRadius="40%"
                     outerRadius="66%"
                     dataKey="value"
+                    nameKey="name"
                     label={({ name, value }) => `${name} ${value}`}
                     labelLine={false}
                   >
@@ -938,7 +971,7 @@ export default function AnalyticsPage() {
                         });
                         return acc;
                       }, [])
-                      .map((entry, i) => <Cell key={`${entry.name}-${i}`} fill={entry.color} />)}
+                      .map((entry, i) => <Cell key={`${entry.name}-${i}`} fill={entry.color} name={entry.name} />)}
                   </Pie>
                   <Tooltip content={<CustomTooltip />} />
                 </PieChart>

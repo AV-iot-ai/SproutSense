@@ -100,7 +100,7 @@ export default function MockDataPanel() {
 
 // ─── SENSORS TAB (Card Based) ────────────────────────────────────────────────
 function SensorsTab({ refresh }) {
-  const [form, setForm] = useState({ name: '', moisture: 60, temperature: 28, humidity: 70, flowRate: 120, flowVolume: 0, sensorType: 'plant' });
+  const [form, setForm] = useState({ name: '', moisture: 60, temperature: 28, humidity: 70, light: 1200, flowRate: 120, flowVolume: 0, sensorType: 'plant' });
   const sensors = mockDataStore.sensors || [];
 
   function handleAdd(e) {
@@ -111,8 +111,10 @@ function SensorsTab({ refresh }) {
       name: form.name || (form.sensorType === 'flow' ? 'Irrigation Flow Sensor' : 'Field Node'),
       flowRate: form.sensorType === 'flow' ? Number(form.flowRate) : undefined,
       flowVolume: form.sensorType === 'flow' ? Number(form.flowVolume) : undefined,
+      light: form.sensorType === 'flow' ? undefined : Number(form.light),
+      humidity: form.sensorType === 'flow' ? undefined : Number(form.humidity),
     });
-    setForm({ name: '', moisture: 60, temperature: 28, humidity: 70, flowRate: 120, flowVolume: 0, sensorType: 'plant' });
+    setForm({ name: '', moisture: 60, temperature: 28, humidity: 70, light: 1200, flowRate: 120, flowVolume: 0, sensorType: 'plant' });
     refresh();
   }
 
@@ -133,17 +135,30 @@ function SensorsTab({ refresh }) {
             <input type="text" placeholder="Zone identifier" value={form.name}
               onChange={e => setForm(p => ({ ...p, name: e.target.value }))} required />
           </div>
-          <div className="mock-input-field">
-            <label>Moisture %</label>
-            <input type="number" min="0" max="100" value={form.moisture}
-              onChange={e => setForm(p => ({ ...p, moisture: +e.target.value }))} />
-          </div>
-          <div className="mock-input-field">
-            <label>Temp °C</label>
-            <input type="number" step="0.1" value={form.temperature}
-              onChange={e => setForm(p => ({ ...p, temperature: +e.target.value }))} />
-          </div>
-          {form.sensorType === 'flow' && (
+          {form.sensorType === 'plant' ? (
+            <>
+              <div className="mock-input-field">
+                <label>Moisture %</label>
+                <input type="number" min="0" max="100" value={form.moisture}
+                  onChange={e => setForm(p => ({ ...p, moisture: +e.target.value }))} />
+              </div>
+              <div className="mock-input-field">
+                <label>Temp °C</label>
+                <input type="number" step="0.1" value={form.temperature}
+                  onChange={e => setForm(p => ({ ...p, temperature: +e.target.value }))} />
+              </div>
+              <div className="mock-input-field">
+                <label>Humidity %</label>
+                <input type="number" min="0" max="100" value={form.humidity}
+                  onChange={e => setForm(p => ({ ...p, humidity: +e.target.value }))} />
+              </div>
+              <div className="mock-input-field">
+                <label>Light (lux)</label>
+                <input type="number" min="0" max="100000" value={form.light}
+                  onChange={e => setForm(p => ({ ...p, light: +e.target.value }))} />
+              </div>
+            </>
+          ) : (
             <>
               <div className="mock-input-field">
                 <label>Flow Rate mL/min</label>
@@ -175,19 +190,7 @@ function SensorsTab({ refresh }) {
             </div>
             
             <div className="mock-card-metrics">
-              <div className="mock-metric">
-                <span className="mock-metric-label">Moisture</span>
-                <span className="mock-metric-value">{s.moisture}%</span>
-              </div>
-              <div className="mock-metric">
-                <span className="mock-metric-label">Temp</span>
-                <span className="mock-metric-value">{s.temperature}°C</span>
-              </div>
-              <div className="mock-metric">
-                <span className="mock-metric-label">Humidity</span>
-                <span className="mock-metric-value">{s.humidity}%</span>
-              </div>
-              {s.sensorType === 'flow' && (
+              {s.sensorType === 'flow' ? (
                 <>
                   <div className="mock-metric">
                     <span className="mock-metric-label">Flow Rate</span>
@@ -196,6 +199,25 @@ function SensorsTab({ refresh }) {
                   <div className="mock-metric">
                     <span className="mock-metric-label">Flow Volume</span>
                     <span className="mock-metric-value">{Number(s.flowVolume || 0).toFixed(0)} mL</span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="mock-metric">
+                    <span className="mock-metric-label">Moisture</span>
+                    <span className="mock-metric-value">{s.moisture}%</span>
+                  </div>
+                  <div className="mock-metric">
+                    <span className="mock-metric-label">Temp</span>
+                    <span className="mock-metric-value">{s.temperature}°C</span>
+                  </div>
+                  <div className="mock-metric">
+                    <span className="mock-metric-label">Humidity</span>
+                    <span className="mock-metric-value">{s.humidity}%</span>
+                  </div>
+                  <div className="mock-metric">
+                    <span className="mock-metric-label">Light</span>
+                    <span className="mock-metric-value">{s.light || 0} lux</span>
                   </div>
                 </>
               )}

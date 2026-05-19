@@ -78,22 +78,31 @@ export const mockDataStore = {
       return false;
     }
   })(),
-  simulationActive: false, // Drift mode
+  simulationActive: (() => {
+    try {
+      const persisted = localStorage.getItem('ss_simulation_active');
+      return persisted ? JSON.parse(persisted) : true;
+    } catch (e) {
+      return true;
+    }
+  })(),
   scenario: 'normal',
+  pumpActive: false,
+  simTimeOfDay: 8.0, // Start at 8:00 AM
   _timer: null,
 
   sensors: [
-    { id: 'S001', name: 'Field A - Zone 1', moisture: 62, temperature: 28.4, humidity: 71, status: 'active', lastUpdate: 'just now', activityIndex: 0 },
-    { id: 'S002', name: 'Field A - Zone 2', moisture: 45, temperature: 31.2, humidity: 65, status: 'active', lastUpdate: 'just now', activityIndex: 0 },
-    { id: 'S003', name: 'Field B - Zone 1', moisture: 78, temperature: 26.8, humidity: 80, status: 'active', lastUpdate: 'just now', activityIndex: 0 },
-    { id: 'S004', name: 'Field B - Zone 2', moisture: 33, temperature: 29.1, humidity: 68, status: 'warning', lastUpdate: 'just now', activityIndex: 0 },
-    createFlowSensor({ id: 'F001', name: 'Main Line Flow Sensor' }),
+    { id: 'S001', name: 'Field A - Zone 1', moisture: 62, temperature: 28.4, humidity: 71, light: 1200, status: 'active', lastUpdate: 'just now', activityIndex: 0 },
+    { id: 'S002', name: 'Field A - Zone 2', moisture: 45, temperature: 31.2, humidity: 65, light: 850, status: 'active', lastUpdate: 'just now', activityIndex: 0 },
+    { id: 'S003', name: 'Field B - Zone 1', moisture: 78, temperature: 26.8, humidity: 80, light: 1500, status: 'active', lastUpdate: 'just now', activityIndex: 0 },
+    { id: 'S004', name: 'Field B - Zone 2', moisture: 33, temperature: 29.1, humidity: 68, light: 340, status: 'warning', lastUpdate: 'just now', activityIndex: 0 },
+    createFlowSensor({ id: 'F001', name: 'Main Line Flow Sensor', flowRate: 142.5, flowVolume: 860 }),
   ],
 
   alerts: [
-    { id: 'A001', type: 'moisture', severity: 'high',   message: 'Soil moisture critically low in Field B Zone 2', timestamp: '10:32 AM', enabled: true },
-    { id: 'A002', type: 'temperature', severity: 'medium', message: 'High temperature detected in Field A Zone 2', timestamp: '09:15 AM', enabled: true },
-    { id: 'A003', type: 'system', severity: 'low',     message: 'Sensor S003 battery at 18%', timestamp: '08:00 AM', enabled: false },
+    { id: 'A001', type: 'moisture', severity: 'high',   message: 'Soil moisture critically low in Field B Zone 2', timestamp: new Date(Date.now() - 15 * 60_000).toISOString(), enabled: true },
+    { id: 'A002', type: 'temperature', severity: 'medium', message: 'High temperature detected in Field A Zone 2', timestamp: new Date(Date.now() - 2 * 3600_000).toISOString(), enabled: true },
+    { id: 'A003', type: 'system', severity: 'low',     message: 'Sensor S003 battery at 18%', timestamp: new Date(Date.now() - 5 * 3600_000).toISOString(), enabled: false },
   ],
 
   cropHealth: {
@@ -151,6 +160,7 @@ const SCENARIOS = {
       moisture: Math.floor(Math.random() * 80 + 20),
       temperature: +(24 + Math.random() * 10).toFixed(1),
       humidity: Math.floor(Math.random() * 40 + 50),
+      light: Math.floor(Math.random() * 1800 + 200),
       status: ['active', 'active', 'active', 'warning'][Math.floor(Math.random() * 4)],
       lastUpdate: `${Math.floor(Math.random() * 9) + 1} min ago`,
     })),
@@ -190,6 +200,7 @@ export function setMockEnabled(val) {
       sensors: mockDataStore.sensors?.length || 0,
       alerts: mockDataStore.alerts?.length || 0,
     });
+    setSimulationActive(true);
   } else {
     setSimulationActive(false);
     logAction('MOCK_DISABLED', {});
@@ -214,27 +225,230 @@ export function getStatus() {
   };
 }
 
+// ─── Alert Syncing and Crop Health Helpers ────────────────────────────────────
+function syncMockAlerts() {
+  if (!mockDataStore.sensors || !mockDataStore.alerts) return false;
+
+  const currentAlerts = [...mockDataStore.alerts];
+  let changed = false;
+
+  mockDataStore.sensors.forEach(s => {
+    const isFlowSensor = s.sensorType === 'flow' || /flow/i.test(s.name || '');
+    if (isFlowSensor) return;
+
+    const critId = `crit-moisture-${s.id}`;
+    const warnId = `warn-moisture-${s.id}`;
+
+    // Moisture Alerts
+    if (s.moisture < 20) {
+      const hasCrit = currentAlerts.some(a => a.id === critId);
+      if (!hasCrit) {
+        mockDataStore.alerts = mockDataStore.alerts.filter(a => a.id !== warnId);
+        mockDataStore.alerts.push({
+          id: critId,
+          type: 'moisture',
+          severity: 'high',
+          message: `Soil moisture critically low in ${s.name}`,
+          value: `${s.moisture}%`,
+          timestamp: new Date().toISOString(),
+          enabled: true
+        });
+        logAction('ALERT_ADDED', { alertId: critId, type: 'moisture', severity: 'high' });
+        changed = true;
+      } else {
+        mockDataStore.alerts = mockDataStore.alerts.map(a => 
+          a.id === critId ? { ...a, value: `${s.moisture}%` } : a
+        );
+      }
+    } else if (s.moisture < 30) {
+      const hasWarn = currentAlerts.some(a => a.id === warnId);
+      if (!hasWarn) {
+        mockDataStore.alerts = mockDataStore.alerts.filter(a => a.id !== critId);
+        mockDataStore.alerts.push({
+          id: warnId,
+          type: 'moisture',
+          severity: 'medium',
+          message: `Soil moisture needs attention in ${s.name}`,
+          value: `${s.moisture}%`,
+          timestamp: new Date().toISOString(),
+          enabled: true
+        });
+        logAction('ALERT_ADDED', { alertId: warnId, type: 'moisture', severity: 'medium' });
+        changed = true;
+      } else {
+        mockDataStore.alerts = mockDataStore.alerts.map(a => 
+          a.id === warnId ? { ...a, value: `${s.moisture}%` } : a
+        );
+      }
+    } else {
+      const lenBefore = mockDataStore.alerts.length;
+      mockDataStore.alerts = mockDataStore.alerts.filter(a => a.id !== critId && a.id !== warnId);
+      if (mockDataStore.alerts.length !== lenBefore) {
+        logAction('ALERT_CLEARED', { sensorId: s.id, type: 'moisture' });
+        changed = true;
+      }
+    }
+
+    // Temperature Alerts
+    const tempCritId = `crit-temp-${s.id}`;
+    const tempWarnId = `warn-temp-${s.id}`;
+    if (s.temperature >= 40) {
+      const hasCrit = currentAlerts.some(a => a.id === tempCritId);
+      if (!hasCrit) {
+        mockDataStore.alerts = mockDataStore.alerts.filter(a => a.id !== tempWarnId);
+        mockDataStore.alerts.push({
+          id: tempCritId,
+          type: 'temperature',
+          severity: 'high',
+          message: `Critical high temperature in ${s.name}`,
+          value: `${s.temperature} °C`,
+          timestamp: new Date().toISOString(),
+          enabled: true
+        });
+        logAction('ALERT_ADDED', { alertId: tempCritId, type: 'temperature', severity: 'high' });
+        changed = true;
+      } else {
+        mockDataStore.alerts = mockDataStore.alerts.map(a => 
+          a.id === tempCritId ? { ...a, value: `${s.temperature} °C` } : a
+        );
+      }
+    } else if (s.temperature >= 35) {
+      const hasWarn = currentAlerts.some(a => a.id === tempWarnId);
+      if (!hasWarn) {
+        mockDataStore.alerts = mockDataStore.alerts.filter(a => a.id !== tempCritId);
+        mockDataStore.alerts.push({
+          id: tempWarnId,
+          type: 'temperature',
+          severity: 'medium',
+          message: `High temperature needs attention in ${s.name}`,
+          value: `${s.temperature} °C`,
+          timestamp: new Date().toISOString(),
+          enabled: true
+        });
+        logAction('ALERT_ADDED', { alertId: tempWarnId, type: 'temperature', severity: 'medium' });
+        changed = true;
+      } else {
+        mockDataStore.alerts = mockDataStore.alerts.map(a => 
+          a.id === tempWarnId ? { ...a, value: `${s.temperature} °C` } : a
+        );
+      }
+    } else {
+      const lenBefore = mockDataStore.alerts.length;
+      mockDataStore.alerts = mockDataStore.alerts.filter(a => a.id !== tempCritId && a.id !== tempWarnId);
+      if (mockDataStore.alerts.length !== lenBefore) {
+        logAction('ALERT_CLEARED', { sensorId: s.id, type: 'temperature' });
+        changed = true;
+      }
+    }
+  });
+
+  return changed;
+}
+
+function simulateCropHealth() {
+  if (!mockDataStore.cropHealth || !mockDataStore.sensors) return;
+  
+  let hasStress = false;
+  let hasCrit = false;
+  
+  mockDataStore.sensors.forEach(s => {
+    const isFlowSensor = s.sensorType === 'flow' || /flow/i.test(s.name || '');
+    if (isFlowSensor) return;
+    if (s.moisture < 30) hasStress = true;
+    if (s.moisture < 20 || s.temperature >= 38) hasCrit = true;
+  });
+
+  let nextScore = mockDataStore.cropHealth.overallScore;
+  let nextWaterStress = mockDataStore.cropHealth.waterStress;
+
+  if (hasCrit) {
+    nextScore = Math.max(40, nextScore - 1.2);
+    nextWaterStress = Math.min(100, nextWaterStress + 2);
+  } else if (hasStress) {
+    nextScore = Math.max(60, nextScore - 0.4);
+    nextWaterStress = Math.min(100, nextWaterStress + 1);
+  } else {
+    nextScore = Math.min(96, nextScore + 0.3);
+    nextWaterStress = Math.max(2, nextWaterStress - 1.2);
+  }
+
+  mockDataStore.cropHealth = {
+    ...mockDataStore.cropHealth,
+    overallScore: Math.round(nextScore),
+    waterStress: Math.round(nextWaterStress),
+    nutrientLevel: Math.round(80 + (Math.sin(mockDataStore.simTimeOfDay / 4) * 2)),
+    lastAnalysis: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+  };
+}
+
 export function isSimulationActive() { return mockDataStore.simulationActive; }
+
+export function startMockPump() {
+  mockDataStore.pumpActive = true;
+  logAction('PUMP_STARTED', { source: 'simulation' });
+  notifyUpdate();
+}
+
+export function stopMockPump() {
+  mockDataStore.pumpActive = false;
+  logAction('PUMP_STOPPED', { source: 'simulation' });
+  notifyUpdate();
+}
+
+export function getMockPumpActive() {
+  return !!mockDataStore.pumpActive;
+}
 
 export function setSimulationActive(val) {
   mockDataStore.simulationActive = !!val;
+
+  try {
+    localStorage.setItem('ss_simulation_active', JSON.stringify(mockDataStore.simulationActive));
+  } catch (e) {
+    console.error('Failed to persist simulation state', e);
+  }
   
   if (mockDataStore.simulationActive) {
     if (mockDataStore._timer) clearInterval(mockDataStore._timer);
+    
+    if (mockDataStore.pumpActive === undefined) mockDataStore.pumpActive = false;
+    if (mockDataStore.simTimeOfDay === undefined) mockDataStore.simTimeOfDay = 8.0;
+
     logAction('DRIFT_ON', { sensorCount: mockDataStore.sensors?.length || 0 });
     mockDataStore._timer = setInterval(() => {
       if (!mockDataStore.sensors) return;
       
       let changed = false;
+      
+      // Advance simulated time of day (15 simulated minutes every 3 seconds)
+      mockDataStore.simTimeOfDay = (mockDataStore.simTimeOfDay + 0.25) % 24;
+      const t = mockDataStore.simTimeOfDay;
+      
+      // Diurnal cycle profiles
+      let sunFactor = 0;
+      if (t >= 6 && t <= 18) {
+        sunFactor = Math.sin((t - 6) / 12 * Math.PI); // Noon peak
+      }
+      
+      const tempCycle = Math.sin((t - 9) / 24 * 2 * Math.PI); // Mid-afternoon peak
+      const targetAmbientTemp = 22 + (tempCycle * 6);
+      const targetAmbientHumidity = 75 - (tempCycle * 15);
+      const evapRate = 0.04 + (sunFactor * 0.08) + (Math.max(0, targetAmbientTemp - 20) * 0.003);
+
       mockDataStore.sensors = mockDataStore.sensors.map(s => {
         if (s.status !== 'active') return s;
 
         const isFlowSensor = s.sensorType === 'flow' || /flow/i.test(s.name || '');
         if (isFlowSensor) {
-          const baseRate = Number.isFinite(Number(s.flowRate)) ? Number(s.flowRate) : 120;
-          const rateDrift = (Math.sin((s.activityIndex || 0) / 2) * 18) + ((Math.random() - 0.5) * 10);
-          const nextRate = Math.max(0, Math.min(1800, baseRate + rateDrift));
-          const nextVolume = Number(s.flowVolume || 0) + (nextRate * 0.05);
+          let nextRate = 0;
+          if (mockDataStore.pumpActive) {
+            nextRate = 140 + (Math.sin((s.activityIndex || 0) / 2) * 5) + ((Math.random() - 0.5) * 4);
+          } else {
+            nextRate = 0;
+          }
+          
+          const volumeIncrement = (nextRate / 60) * 3;
+          const nextVolume = Number(s.flowVolume || 0) + volumeIncrement;
 
           changed = true;
           return {
@@ -246,23 +460,49 @@ export function setSimulationActive(val) {
           };
         }
         
-        // Random drift +/- 0.5 to 1.5
-        const driftM = (Math.random() - 0.5) * 2;
-        const driftT = (Math.random() - 0.5) * 0.4;
-        const driftH = (Math.random() - 0.5) * 1.2;
-        
+        let nextMoisture = s.moisture;
+        if (mockDataStore.pumpActive) {
+          nextMoisture = Math.min(100, s.moisture + 2.5);
+        } else {
+          // Add micro-noise and evaporation drift
+          const noiseMoisture = (Math.random() - 0.5) * 0.25; // ±0.125% fluctuation
+          nextMoisture = Math.max(0, Math.min(100, s.moisture - evapRate + noiseMoisture));
+        }
+
+        const zoneTempOffset = s.id === 'S001' ? 0.8 : s.id === 'S002' ? -1.2 : s.id === 'S003' ? 0.3 : -0.5;
+        const targetTemp = targetAmbientTemp + zoneTempOffset;
+        const currentTemp = s.temperature || 24;
+        const noiseTemp = (Math.random() - 0.5) * 0.4; // ±0.2°C fluctuation
+        const nextTemp = currentTemp + (targetTemp - currentTemp) * 0.15 + noiseTemp;
+
+        const zoneHumOffset = s.id === 'S001' ? -3 : s.id === 'S002' ? 4 : s.id === 'S003' ? -1 : 2;
+        const targetHum = targetAmbientHumidity + zoneHumOffset;
+        const currentHum = s.humidity || 70;
+        const noiseHum = (Math.random() - 0.5) * 0.6; // ±0.3% fluctuation
+        const nextHum = currentHum + (targetHum - currentHum) * 0.15 + noiseHum;
+
+        const zoneLightOffset = s.id === 'S001' ? 1.05 : s.id === 'S002' ? 0.85 : s.id === 'S003' ? 1.15 : 0.70;
+        const targetLight = sunFactor * 1400 * zoneLightOffset;
+        const currentLight = s.light || 0;
+        const noiseLight = (Math.random() - 0.5) * 30; // ±15 lux fluctuation
+        const nextLight = currentLight + (targetLight - currentLight) * 0.25 + noiseLight;
+
         changed = true;
         return {
           ...s,
-          moisture: Math.max(0, Math.min(100, +(s.moisture + driftM).toFixed(1))),
-          temperature: Math.max(0, Math.min(50, +(s.temperature + driftT).toFixed(1))),
-          humidity: Math.max(0, Math.min(100, +(s.humidity + driftH).toFixed(1))),
+          moisture: +nextMoisture.toFixed(1),
+          temperature: +nextTemp.toFixed(1),
+          humidity: Math.max(0, Math.min(100, Math.round(nextHum))),
+          light: Math.max(0, Math.round(nextLight)),
           activityIndex: (s.activityIndex || 0) + 1,
           lastUpdate: 'pulsing'
         };
       });
+
+      const alertsChanged = syncMockAlerts();
+      simulateCropHealth();
       
-      if (changed) notifyUpdate();
+      if (changed || alertsChanged) notifyUpdate();
     }, 3000);
   } else {
     if (mockDataStore._timer) {
@@ -288,7 +528,31 @@ export function applyScenario(name) {
 }
 
 export function getMockSensors()      { return mockDataStore.sensors ?? []; }
-export function getMockAlerts()       { return mockDataStore.alerts ?? []; }
+export function getMockAlerts() {
+  return (mockDataStore.alerts ?? []).map(a => {
+    let uiType = 'info';
+    if (a.severity === 'high' || a.type === 'error' || a.type === 'critical') {
+      uiType = 'error';
+    } else if (a.severity === 'medium' || a.type === 'warning' || a.type === 'attention') {
+      uiType = 'warning';
+    } else if (a.severity === 'low' || a.type === 'info') {
+      uiType = 'info';
+    } else {
+      if (a.type === 'moisture' && a.severity === 'high') uiType = 'error';
+      else if (a.type === 'temperature' && a.severity === 'medium') uiType = 'warning';
+      else if (a.type === 'system' && a.severity === 'low') uiType = 'info';
+    }
+
+    return {
+      ...a,
+      type: uiType,
+      value: a.value || (a.type === 'moisture' ? '18%' : a.type === 'temperature' ? '39.2 °C' : ''),
+      time: a.timestamp || 'just now',
+      timestamp: a.timestamp || 'just now',
+      enabled: a.enabled !== undefined ? a.enabled : true,
+    };
+  });
+}
 export function getMockCropHealth()   { return mockDataStore.cropHealth; }
 export function getMockWeather()      { return mockDataStore.weather; }
 export function getMockUsers()        { return mockDataStore.users; }
@@ -302,8 +566,8 @@ export function addSensor(sensor) {
     status: 'active',
     lastUpdate: 'just now',
     ...(isFlowSensor
-      ? { sensorType: 'flow', moisture: 0, temperature: 0, humidity: 0, flowRate: 120, flowVolume: 0 }
-      : {}),
+      ? { sensorType: 'flow', moisture: 0, temperature: 0, humidity: 0, flowRate: 120, flowVolume: 0, light: 0 }
+      : { sensorType: 'plant', light: 1200 }),
     ...sensor,
   };
   mockDataStore.sensors = [...(mockDataStore.sensors || []), newSensor];
@@ -323,7 +587,7 @@ export function deleteSensor(id) {
 
 // ─── Alert CRUD ───────────────────────────────────────────────────────────────
 export function addAlert(alert) {
-  const newAlert = { id: `A${Date.now()}`, enabled: true, timestamp: new Date().toLocaleTimeString(), ...alert };
+  const newAlert = { id: `A${Date.now()}`, enabled: true, timestamp: new Date().toISOString(), ...alert };
   mockDataStore.alerts = [...(mockDataStore.alerts || []), newAlert];
   logAction('ALERT_ADDED', { alertId: newAlert.id, type: newAlert.type });
   notifyUpdate();
@@ -413,4 +677,11 @@ export function importMockData(jsonString) {
     logAction('IMPORT_FAILED', { error: err.message });
     return { success: false, error: 'Invalid JSON format' };
   }
+}
+
+// Auto-start simulation if mock mode is active on initialization
+if (mockDataStore.enabled && mockDataStore.simulationActive) {
+  setTimeout(() => {
+    setSimulationActive(true);
+  }, 100);
 }

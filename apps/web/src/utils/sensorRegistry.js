@@ -99,8 +99,8 @@ const DEFAULT_SENSORS = [
     category: 'irrigation',
     minThreshold: 0,
     maxThreshold: 900,
-    warningThreshold: 1,
-    criticalThreshold: 900,
+    warningThreshold: 800,
+    criticalThreshold: 850,
     chartType: 'sparkline',
     enabled: true,
     showInDashboard: true,
@@ -239,12 +239,36 @@ export function getStatusForValue(sensor, value) {
   const warn = Number(sensor.warningThreshold);
   const critical = Number(sensor.criticalThreshold);
 
-  if (numberValue < min || numberValue > max || numberValue >= critical) {
-    return { level: 'critical', color: 'var(--rec-critical)', label: 'Critical' };
+  const key = String(sensor.key || sensor.id || '').toLowerCase();
+  
+  // Specific check for flow sensors to prevent legacy threshold bugs
+  if (key.includes('flow')) {
+    if (numberValue < min || numberValue > max || numberValue >= critical) {
+      return { level: 'critical', color: 'var(--rec-critical)', label: 'Critical' };
+    }
+    if (numberValue >= warn && warn > 10) {
+      return { level: 'warning', color: 'var(--warning-color)', label: 'Attention' };
+    }
+    return { level: 'normal', color: 'var(--chart-healthy)', label: 'Normal' };
   }
 
-  if (numberValue >= warn || numberValue <= min) {
-    return { level: 'warning', color: 'var(--warning-color)', label: 'Warning' };
+  // Determine direction: lower-bound (e.g. moisture, light) vs upper-bound (e.g. temp, humidity)
+  const isLowerBound = critical < warn;
+
+  if (isLowerBound) {
+    if (numberValue < critical || numberValue < min || numberValue > max) {
+      return { level: 'critical', color: 'var(--rec-critical)', label: 'Critical' };
+    }
+    if (numberValue < warn) {
+      return { level: 'warning', color: 'var(--warning-color)', label: 'Attention' };
+    }
+  } else {
+    if (numberValue > critical || numberValue > max || numberValue < min) {
+      return { level: 'critical', color: 'var(--rec-critical)', label: 'Critical' };
+    }
+    if (numberValue > warn) {
+      return { level: 'warning', color: 'var(--warning-color)', label: 'Attention' };
+    }
   }
 
   return { level: 'normal', color: 'var(--chart-healthy)', label: 'Normal' };

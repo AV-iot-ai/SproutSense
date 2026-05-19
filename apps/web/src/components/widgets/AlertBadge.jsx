@@ -15,7 +15,7 @@ import React from 'react';
 // Maps alert type → CSS modifier and accessible label
 const TYPE_META = {
   error:   { cls: 'alert-badge--error',   label: 'Critical' },
-  warning: { cls: 'alert-badge--warning', label: 'Warning'  },
+  warning: { cls: 'alert-badge--warning', label: 'Attention' },
   info:    { cls: 'alert-badge--info',    label: 'Info'     },
   success: { cls: 'alert-badge--success', label: 'OK'       },
 };

@@ -27,7 +27,7 @@ const SENSORS = {
   },
   temperature: {
     label: 'Temperature',    unit: '°C',      faIcon: 'fa-temperature-half',
-    color: '#f59e0b',        maxDisplay: 60,
+    color: '#e2a446ff',        maxDisplay: 60,
     hardware: { model: 'DHT22 (AM2302)', type: 'Digital Temp + Humidity', range: '-40 to +80°C', voltage: '3.3V – 5.5V', output: 'Single-wire digital', accuracy: '±0.5°C', description: 'Combined temperature and humidity sensor. Uses single-wire protocol. Sampling rate: 0.5 Hz.' },
     optimal: { min: 15, max: 35 },
     status: v => v > 38 ? 'critical' : v > 32 ? 'warning' : 'good',
@@ -87,7 +87,13 @@ function RadialGauge({ pct, color, status }) {
   const R = 36;
   const CIRC = 2 * Math.PI * R;
   const dash = Math.max(0, Math.min(1, pct)) * CIRC;
-  const glowColor = STATUS_CFG[status]?.color || color;
+
+  let glowColor = color;
+  if (status === 'critical') {
+    glowColor = '#ef4444';
+  } else if (status === 'warning') {
+    glowColor = '#f59e0b';
+  }
 
   return (
     <svg className="sc-gauge-svg" viewBox="0 0 88 88" aria-hidden="true">
@@ -155,10 +161,16 @@ function formatSensorDisplayValue(info, value) {
 }
 
 // ── Optimal range bar ───────────────────────────────────────────────────────
-function RangeBar({ value, min, max, maxDisplay, color }) {
+function RangeBar({ value, min, max, maxDisplay, color, status }) {
   const fullPct = Math.min(100, Math.max(0, (value / maxDisplay) * 100));
-  const inRange = value >= min && value <= max;
-  const barColor = inRange ? color : '#ef4444';
+  
+  let barColor = color;
+  if (status === 'critical') {
+    barColor = '#ef4444';
+  } else if (status === 'warning') {
+    barColor = '#f59e0b';
+  }
+
   // zone markers
   const minPct = (min / maxDisplay) * 100;
   const maxPct = (max / maxDisplay) * 100;
@@ -270,7 +282,7 @@ function MetricCard({ info, value, isOpen, onToggle }) {
       {/* Range bar */}
       {hasValue && (
         <div className="sc-range-row">
-          <RangeBar value={value} min={info.optimal.min} max={info.optimal.max} maxDisplay={info.maxDisplay} color={info.color} />
+          <RangeBar value={value} min={info.optimal.min} max={info.optimal.max} maxDisplay={info.maxDisplay} color={info.color} status={status} />
         </div>
       )}
 

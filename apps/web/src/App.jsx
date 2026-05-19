@@ -384,10 +384,20 @@ function App() {
     if (!sensors) return;
     const newAlerts = [];
     const now = new Date();
-    if (sensors.soilMoisture !== undefined && sensors.soilMoisture < 20)
-      newAlerts.push({ id: 'low-moisture', type: 'warning', message: 'Soil moisture critically low', value: `${sensors.soilMoisture}%`, time: now });
-    if (sensors.temperature !== undefined && sensors.temperature > 38)
-      newAlerts.push({ id: 'high-temp', type: 'error', message: 'High temperature detected', value: `${sensors.temperature} °C`, time: now });
+    if (sensors.soilMoisture !== undefined) {
+      if (sensors.soilMoisture < 20) {
+        newAlerts.push({ id: 'low-moisture-crit', type: 'error', message: 'Soil moisture critically low', value: `${sensors.soilMoisture}%`, time: now });
+      } else if (sensors.soilMoisture < 30) {
+        newAlerts.push({ id: 'low-moisture-warn', type: 'warning', message: 'Soil moisture needs attention', value: `${sensors.soilMoisture}%`, time: now });
+      }
+    }
+    if (sensors.temperature !== undefined) {
+      if (sensors.temperature >= 40) {
+        newAlerts.push({ id: 'high-temp-crit', type: 'error', message: 'Critical high temperature detected', value: `${sensors.temperature} °C`, time: now });
+      } else if (sensors.temperature >= 35) {
+        newAlerts.push({ id: 'high-temp-warn', type: 'warning', message: 'High temperature needs attention', value: `${sensors.temperature} °C`, time: now });
+      }
+    }
     if (sensors.pH !== undefined && (sensors.pH < 5.5 || sensors.pH > 7.5))
       newAlerts.push({ id: 'ph-out', type: 'warning', message: 'pH level out of optimal range', value: `pH ${sensors.pH}`, time: now });
     if (sensors.humidity !== undefined && sensors.humidity < 30)
@@ -615,9 +625,16 @@ function App() {
     const fetchData = async () => {
       if (isMockEnabled()) {
         const mockSensorsArr = getMockSensors();
-        const mockPrimary = mockSensorsArr.length > 0 ? mockSensorsArr[0] : null;
+        const mockPrimary = mockSensorsArr.find(s => s.sensorType !== 'flow') || mockSensorsArr[0] || null;
+        const mockFlow = mockSensorsArr.find(s => s.sensorType === 'flow');
 
-        setSensors(normalizeSensorPayload(mockPrimary));
+        const mergedPayload = mockPrimary ? {
+          ...mockPrimary,
+          flowRate: mockFlow ? mockFlow.flowRate : 0,
+          flowVolume: mockFlow ? mockFlow.flowVolume : 0,
+        } : null;
+
+        setSensors(normalizeSensorPayload(mergedPayload));
         setAlerts(getMockAlerts()); // Instantly update alerts from mock
         setSystemStatus({
           backend: 'online', database: 'online', esp32: 'online', esp32Cam: 'online',

@@ -28,7 +28,7 @@ const CAT_FA = {
 
 const GRAPH_TABS = [
   { key: 'soilMoisture', label: 'Soil',    unit: '%',    fa: 'fa-droplet',          color: '#22c55e' },
-  { key: 'temperature',  label: 'Temp',    unit: '°C',  fa: 'fa-temperature-half', color: '#f59e0b' },
+  { key: 'temperature',  label: 'Temp',    unit: '°C',  fa: 'fa-temperature-half', color: '#f97316' },
   { key: 'humidity',     label: 'Humidity',unit: '%',    fa: 'fa-cloud-rain',       color: '#22d3ee' },
   { key: 'lightLevel',   label: 'Light',   unit: ' lux', fa: 'fa-sun',              color: '#fbbf24' },
 ];

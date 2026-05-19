@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import api from '../api'; // Use the newly fixed global API client
 import { formatDiseaseName } from '../utils/formatters'; // Ensure this path is correct
 import { GlassIcon } from '../components/GlassIcon'; // Ensure this path is correct
@@ -27,7 +27,7 @@ const TIME_RANGES = [
 
 const METRIC_OPTIONS = [
   { key: 'soilMoisture', label: 'Soil Moisture', unit: '%', icon: 'humidity', color: '#22c55e' },
-  { key: 'temperature', label: 'Temperature', unit: '°C', icon: 'temperature', color: '#f59e0b' },
+  { key: 'temperature', label: 'Temperature', unit: '°C', icon: 'temperature', color: '#f97316' },
   { key: 'humidity', label: 'Humidity', unit: '%', icon: 'weather', color: '#22d3ee' },
   { key: 'light', label: 'Light', unit: 'lux', icon: 'light', color: '#fbbf24' },
   { key: 'pH', label: 'pH', unit: '', icon: 'ph', color: '#a78bfa' },

@@ -19,6 +19,45 @@ function formatDiseaseName(name) {
   return name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
+function renderAlertTime(timeVal) {
+  if (!timeVal) return '—';
+  const dateObj = new Date(timeVal);
+  if (dateObj instanceof Date && !isNaN(dateObj.getTime())) {
+    try {
+      return formatDistanceToNow(dateObj, { addSuffix: true });
+    } catch {
+      return String(timeVal);
+    }
+  }
+  return String(timeVal);
+}
+
+function renderTimestamp(ts) {
+  if (!ts) return 'Waiting for data...';
+  const dateObj = new Date(ts);
+  if (dateObj instanceof Date && !isNaN(dateObj.getTime())) {
+    try {
+      return format(dateObj, 'MMM d, yyyy · HH:mm:ss');
+    } catch {
+      return String(ts);
+    }
+  }
+  return String(ts);
+}
+
+function renderTimelineDate(ts) {
+  if (!ts) return '—';
+  const dateObj = new Date(ts);
+  if (dateObj instanceof Date && !isNaN(dateObj.getTime())) {
+    try {
+      return format(dateObj, 'MMM d, HH:mm');
+    } catch {
+      return String(ts);
+    }
+  }
+  return String(ts);
+}
+
 // ─── Mock data generators ─────────────────────────────────────────────────────
 const MOCK_DISEASES = [
   'healthy', 'healthy', 'healthy',
@@ -95,7 +134,7 @@ const getSeverityConfig = () => ({
     border: getCSSVariableValue('--alert-error-border')   
   },
   warning: { 
-    label: 'Warning',  
+    label: 'Attention',  
     color: getCSSVariableValue('--alert-warning'), 
     bg: getCSSVariableValue('--alert-warning-bg'), 
     border: getCSSVariableValue('--alert-warning-border') 
@@ -160,7 +199,7 @@ function AlertRow({ alert, onClear }) {
         <span className={styles.alertMeta}>
           {alert.value && <span className={styles.alertValue}>{alert.value}</span>}
           <span className={styles.alertTime}>
-            {alert.time ? formatDistanceToNow(new Date(alert.time), { addSuffix: true }) : '—'}
+            {renderAlertTime(alert.time)}
           </span>
           {alert.source && <span className={styles.alertSource}>{alert.source}</span>}
         </span>
@@ -301,8 +340,8 @@ export default function AlertsPage({ alerts = [], sensors, onClearAlert, onClear
       {/* ── KPI Strip ── */}
       <motion.div className={styles.kpiStrip} variants={itemVariants}>
         {[
-          { label: 'Critical',       value: kpiSummary.critical,      color: getCSSVariableValue('--alert-error'), icon: 'triangle-exclamation'   },
-          { label: 'Warnings',       value: kpiSummary.warnings,      color: getCSSVariableValue('--alert-warning'), icon: 'circle-exclamation' },
+          { label: 'Critical',       value: kpiSummary.critical,      color: getCSSVariableValue('--alert-error'), icon: 'circle-exclamation'   },
+          { label: 'Attention',      value: kpiSummary.warnings,      color: getCSSVariableValue('--alert-warning'), icon: 'triangle-exclamation' },
           { label: 'Disease Events', value: kpiSummary.diseaseEvents, color: getCSSVariableValue('--chart-disease'), icon: 'viruses' },
           { label: 'Healthy Scans',  value: kpiSummary.healthy,       color: getCSSVariableValue('--chart-healthy'), icon: 'check-circle' },
         ].map((k, i) => (
@@ -370,9 +409,7 @@ export default function AlertsPage({ alerts = [], sensors, onClearAlert, onClear
                   {formatDiseaseName(latestDetection?.detectedDisease)}
                 </h2>
                 <p className={styles.detectionTime}>
-                  {latestDetection
-                    ? format(new Date(latestDetection.timestamp), 'MMM d, yyyy · HH:mm:ss')
-                    : 'Waiting for data...'}
+                  {renderTimestamp(latestDetection?.timestamp)}
                 </p>
               </div>
             </>
@@ -412,7 +449,7 @@ export default function AlertsPage({ alerts = [], sensors, onClearAlert, onClear
                     className={`${styles.filterChip} ${activeFilter === f ? styles.filterActive : ''}`}
                     onClick={() => setActiveFilter(f)}
                   >
-                    {f === 'all' ? 'All' : f === 'error' ? '🔴 Critical' : f === 'warning' ? '🟡 Warning' : '🔵 Info'}
+                    {f === 'all' ? 'All' : f === 'error' ? '🔴 Critical' : f === 'warning' ? '🟡 Attention' : '🔵 Info'}
                   </button>
                 ))}
                 {onClearAllAlerts && displayAlerts.length > 0 && (
@@ -472,7 +509,7 @@ export default function AlertsPage({ alerts = [], sensors, onClearAlert, onClear
                             </span>
                           </div>
                           <span className={styles.timelineDate}>
-                            {format(new Date(item.timestamp), 'MMM d, HH:mm')}
+                            {renderTimelineDate(item?.timestamp)}
                           </span>
                         </div>
                       </motion.div>

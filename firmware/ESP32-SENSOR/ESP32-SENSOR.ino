@@ -5,11 +5,9 @@
  * Board   : ESP32-WROOM-32 DevKit (38-pin)
  * Sensors : Soil Moisture (ADC), LDR (ADC), DHT22 (Digital), Flow Meter (pulse)
  * Outputs : Relay → Water Pump (GPIO 14)
- *           Buzzer → Audible alert when pump is ON (GPIO 27)
  * Inputs  : YFS401 (YF-S401) Flow Meter (GPIO 26, interrupt)
- *           Manual button (GPIO 33, active LOW, INPUT_PULLUP)
  * Cloud   : Custom backend REST API only
- * Notes   : pH sensor and on-device display are not used in this build
+ * Notes   : Buzzer and Button moved to Arduino Uno (Power Manager)
  ******************************************************************************/
 
 #include <WiFi.h>
@@ -62,8 +60,6 @@ void configureSecureClient(WiFiClientSecure& client) {
 #define PIN_DHT     15  // CHANGED FROM 13 TO 15
 #define PIN_RELAY   14
 #define PIN_FLOW    26
-#define PIN_BUZZER  27
-#define PIN_BUTTON  33
 
 /* ============================================================
    SENSOR CALIBRATION
@@ -164,23 +160,6 @@ void startPump(const char* trigger = "manual");
 void stopPump();
 void pollRemoteCommand();
 void pollRemoteConfig();
-void buzzerBeep(uint16_t onMs, uint8_t times = 1, uint16_t gapMs = 100);
-void handleButton(unsigned long now);
-
-/* ============================================================
-   BUZZER & BUTTON STATE
-   ============================================================ */
-bool g_buzzerEnabled = true;
-
-void buzzerBeep(uint16_t onMs, uint8_t times, uint16_t gapMs) {
-  if (!g_buzzerEnabled) return;
-  for (uint8_t i = 0; i < times; i++) {
-    digitalWrite(PIN_BUZZER, HIGH);
-    delay(onMs);
-    digitalWrite(PIN_BUZZER, LOW);
-    if (times > 1 && i < times - 1) delay(gapMs);
-  }
-}
 
 /* ============================================================
    SERIAL LOGGING HELPERS
@@ -289,7 +268,6 @@ void startPump(const char* trigger) {
   digitalWrite(PIN_RELAY, HIGH);
   g_pumpRunning = true;
   g_pumpStartMs = millis();
-  buzzerBeep(150, 2, 100);
 
   logSep("PUMP");
   logOK("PUMP", "ON trigger=%-10s target=%.0f mL", trigger, TARGET_WATER_ML);
@@ -317,13 +295,6 @@ void stopPump() {
   float vol = flowMl();
   unsigned long ms = millis() - g_pumpStartMs;
   
-  // <--- NEW: Distinct "Done" sound (Slow descending double beep)
-  if (!g_safetyStop) {
-    buzzerBeep(200, 1); 
-    delay(100);
-    buzzerBeep(400, 1);
-  }
-
   logSep("PUMP");
   logOK("PUMP", "OFF dispensed=%.1f mL runtime=%lu ms", vol, ms);
   logEnd();
@@ -353,7 +324,6 @@ void updatePumpSafety() {
     g_safetyStop = true;
     stopPump();
     g_safetyStop = false;
-    buzzerBeep(200, 3);
   }
 }
 
@@ -426,8 +396,7 @@ void printSensors() {
     logWARN("SENSORS", "DHT22 read failed — cached %.1f°C %.0f%%", g_temp, g_humidity);
   }
   logLine("SENSORS", "Flow vol : %6.1f mL  pulses=%lu", flowMl(), flowPulsesSnapshot());
-  logLine("SENSORS", "Pump     : %s  Buzzer: GPIO%d", g_pumpRunning ? "ON" : "OFF", PIN_BUZZER);
-  logLine("SENSORS", "Button   : GPIO%d  state=%s", PIN_BUTTON, digitalRead(PIN_BUTTON) == LOW ? "PRESSED" : "RELEASED");
+  logLine("SENSORS", "Pump     : %s", g_pumpRunning ? "ON" : "OFF");
   logEnd();
 }
 
@@ -440,52 +409,6 @@ void checkAutoWatering() {
     logWARN("AUTO", "Moisture %.1f%% < %.0f%% — triggering auto-water",
             g_moisture, MOISTURE_THRESHOLD);
     startPump("auto");
-  }
-}
-
-/* ============================================================
-   LOCAL BUTTON
-   ============================================================ */
-void handleButton(unsigned long now) {
-  bool reading = digitalRead(PIN_BUTTON);
-
-  if (reading != g_btnLastReading) {
-    g_btnLastReading = reading;
-    g_btnChangeMs = now;
-  }
-
-  if ((now - g_btnChangeMs) < BUTTON_DEBOUNCE_MS) return;
-  if (reading == g_btnStable) return;
-
-  g_btnStable = reading;
-  
-  // Logic for when the button is pressed (LOW because of INPUT_PULLUP)
-  if (g_btnStable == LOW) {
-    Serial.println("\n>>> BUTTON_PRESSED_EVENT_DETECTED <<<");
-    logLine("BUTTON", "Button Pressed: Silencing Buzzer & Safety Stop Pump");
-
-    // 1. SILENCE BUZZER IMMEDIATELY
-    g_buzzerEnabled = false;
-    digitalWrite(PIN_BUZZER, LOW); 
-    
-    // 2. SAFETY STOP PUMP
-    if (g_pumpRunning) {
-      logLine("BUTTON", "Terminating pump for safety...");
-      g_manualPump = false;
-      stopPump();
-    }
-
-    // 3. LONG PRESS FOR RESET (KEEP AS BEFORE)
-    unsigned long pressStartTime = millis();
-    while(digitalRead(PIN_BUTTON) == LOW) {
-      if (millis() - pressStartTime > 2000) {
-        logLine("BUTTON", "HARD RESET: Clearing WiFi and Restarting...");
-        preferences.begin("sproutsense", false);
-        preferences.clear();
-        delay(1000);
-        ESP.restart();
-      }
-    }
   }
 }
 
@@ -557,7 +480,8 @@ void sendSensors() {
     code = httpPost(URL_SENSORS, payload, 10000);
     if (code == 200 || code == 201) {
       g_backendOk++;
-      logOK("BACKEND", "Saved successfully → HTTP %d", code);      buzzerBeep(50, 1); // <--- NEW: Single short chirp for successful data upload      logLine("BACKEND", "Stats: Total OK=%u, Total FAIL=%u", g_backendOk, g_backendFail);
+      logOK("BACKEND", "Saved successfully → HTTP %d", code);
+      logLine("BACKEND", "Stats: Total OK=%u, Total FAIL=%u", g_backendOk, g_backendFail);
     } else if (code == 401 || code == 403) {
       logERR("BACKEND", "Auth rejected → HTTP %d (Check Device Token)", code);
       break;
@@ -569,7 +493,6 @@ void sendSensors() {
     g_backendFail++;
     logERR("BACKEND", "FATAL: All 3 attempts failed (Network or Server problem)");
     logLine("BACKEND", "Stats: Total OK=%u, Total FAIL=%u", g_backendOk, g_backendFail);
-    buzzerBeep(500, 1); // Long warning beep for network failure
   }
   logEnd();
 }
@@ -716,18 +639,6 @@ void handleSerial(char cmd) {
       logLine("CMD", "Forcing heartbeat POST…");
       sendHeartbeat();
       break;
-
-    case 'z':
-      logLine("TEST", "Buzzer test: pump-on pattern");
-      buzzerBeep(150, 2, 100);
-      delay(500);
-      logLine("TEST", "Buzzer test: pump-off pattern");
-      buzzerBeep(400, 1);
-      delay(500);
-      logLine("TEST", "Buzzer test: safety-timeout pattern");
-      buzzerBeep(200, 3, 80);
-      logOK("TEST", "Buzzer test done");
-      break;
   }
 }
 
@@ -752,13 +663,10 @@ void setup() {
 
   pinMode(PIN_RELAY, OUTPUT);
   digitalWrite(PIN_RELAY, LOW);
-  pinMode(PIN_BUZZER, OUTPUT);
-  digitalWrite(PIN_BUZZER, LOW);
   pinMode(PIN_FLOW, INPUT_PULLUP);
-  pinMode(PIN_BUTTON, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(PIN_FLOW), flowISR, FALLING);
-  logOK("INIT", "GPIO: relay=GPIO%d flow=GPIO%d buzzer=GPIO%d button=GPIO%d",
-        PIN_RELAY, PIN_FLOW, PIN_BUZZER, PIN_BUTTON);
+  logOK("INIT", "GPIO: relay=GPIO%d flow=GPIO%d",
+        PIN_RELAY, PIN_FLOW);
 
   analogSetWidth(12);
   analogSetPinAttenuation(PIN_SOIL, ADC_11db);
@@ -786,10 +694,6 @@ void setup() {
     delay(2000);
   }
   if (!g_dhtValid) logERR("INIT", "DHT22 all attempts failed — using defaults");
-
-  // --- BUZZER BOOT SOUND ---
-  logLine("INIT", "Signalling boot...");
-  buzzerBeep(100, 3, 50); // 3 short beeps on power up
 
   preferences.begin("sproutsense", false);
   wifiSSID = preferences.getString("ssid", DEFAULT_WIFI_SSID);
@@ -822,12 +726,10 @@ void setup() {
 
   logOK("WIFI", "Connected — IP=%s  RSSI=%d dBm",
         WiFi.localIP().toString().c_str(), WiFi.RSSI());
-  buzzerBeep(100, 1);
 
   sendHeartbeat();
   updateSensors();
   printSensors();
-  buzzerBeep(80, 3, 80);
 
   Serial.println();
   Serial.println("╔══════════════════════════════════════════════════╗");
@@ -880,7 +782,6 @@ void loop() {
   }
 
   updatePumpSafety();
-  handleButton(now);
 
   if (Serial.available()) handleSerial((char)Serial.read());
 
