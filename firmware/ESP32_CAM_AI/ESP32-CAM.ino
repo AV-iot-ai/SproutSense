@@ -71,8 +71,8 @@ String wifiPassword = "";
    Get it by calling: POST /api/devices/ESP32-CAM/rotate
    with your user JWT in Authorization header
    ============================================================ */
-const char* DEVICE_ID    = "ESP32-CAM-1VJPQM";
-const char* DEVICE_TOKEN = "8E80446FD314EB99315FB4E7477D69246C6A75D8288CD6D4CD2749911BBD853D";  // FIX #1
+const char* DEVICE_ID    = "ESP32-CAM-QPMOLV";
+const char* DEVICE_TOKEN = "106A56F992F8472AB7FD4968864E5F22CE31E633A5BB180EE9978DE7DFF50CD5";  // FIX #1
 
 const char* EDGE_IMPULSE_PROJECT = "919040";
 
