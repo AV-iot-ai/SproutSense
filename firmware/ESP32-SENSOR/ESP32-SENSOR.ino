@@ -32,7 +32,7 @@ String wifiPassword = "";
 /* ============================================================
    DEVICE IDENTITY
    ============================================================ */
-const char* DEVICE_ID = "ESP32-SENSOR-6B70E9";
+const char* DEVICE_ID = "ESP32-SENSOR-10G9H8";
 const char* DEVICE_TOKEN = "6D8069AA50BFEF6E30CE03A2C73C35F190D375A61C441406BBBDC19E0034E80A";
 
 /* ============================================================

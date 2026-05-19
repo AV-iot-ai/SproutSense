@@ -31,6 +31,20 @@ const api = axios.create({
   }
 });
 
+// Request interceptor to attach JWT token
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('ss_access_token');
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 // Automatic retry for 429 responses (exponential backoff + jitter)
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const MAX_RETRIES = parseInt(import.meta.env.VITE_API_RETRY_MAX || '4', 10);
